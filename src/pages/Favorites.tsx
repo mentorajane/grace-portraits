@@ -1,26 +1,18 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ImageCard from "@/components/ImageCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-
-interface FavoriteImage {
-  id: number;
-  url: string;
-  style: string;
-}
+import { useImageContext } from "@/contexts/ImageContext";
 
 const Favorites = () => {
   const navigate = useNavigate();
-  const [favorites, setFavorites] = useState<FavoriteImage[]>([]);
+  const { favoriteImages } = useImageContext();
 
-  useEffect(() => {
-    // Load favorites from localStorage
-    const savedFavorites = localStorage.getItem('personaFavorites');
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    }
-  }, []);
+  const favorites = favoriteImages.map((img, index) => ({
+    id: index + 1,
+    url: img.url,
+    style: img.style,
+  }));
 
   return (
     <div className="min-h-screen px-4 py-8 md:px-8 md:py-12 animate-fade-in">

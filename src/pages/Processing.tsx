@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useImageContext } from "@/contexts/ImageContext";
 
 const messages = [
   "A arte está tomando forma...",
@@ -12,15 +13,13 @@ const messages = [
 const Processing = () => {
   const navigate = useNavigate();
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [uploadedImage, setUploadedImage] = useState<string>("");
+  const { uploadedImage, setGeneratedImages } = useImageContext();
 
   useEffect(() => {
-    const image = sessionStorage.getItem('uploadedImage');
-    if (!image) {
+    if (!uploadedImage) {
       navigate('/');
       return;
     }
-    setUploadedImage(image);
 
     // Rotate messages
     const messageInterval = setInterval(() => {
@@ -37,7 +36,7 @@ const Processing = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ imageData: image }),
+            body: JSON.stringify({ imageData: uploadedImage }),
           }
         );
 
@@ -48,8 +47,8 @@ const Processing = () => {
 
         const data = await response.json();
         
-        // Store generated images
-        sessionStorage.setItem('generatedImages', JSON.stringify(data.images));
+        // Store generated images in context
+        setGeneratedImages(data.images);
         
         navigate('/results');
       } catch (error) {

@@ -4,38 +4,26 @@ import ImageCard from "@/components/ImageCard";
 import { Button } from "@/components/ui/button";
 import { Download, Share2, BookMarked } from "lucide-react";
 import { toast } from "sonner";
-
-interface GeneratedImage {
-  style: string;
-  url: string;
-}
+import { useImageContext } from "@/contexts/ImageContext";
 
 const Results = () => {
   const navigate = useNavigate();
+  const { generatedImages } = useImageContext();
   const [results, setResults] = useState<Array<{ id: number; url: string; style: string }>>([]);
 
   useEffect(() => {
-    const uploadedImage = sessionStorage.getItem('uploadedImage');
-    const generatedImagesStr = sessionStorage.getItem('generatedImages');
-    
-    if (!uploadedImage || !generatedImagesStr) {
+    if (!generatedImages || generatedImages.length === 0) {
       navigate('/');
       return;
     }
 
-    try {
-      const generatedImages: GeneratedImage[] = JSON.parse(generatedImagesStr);
-      const formattedResults = generatedImages.map((img, index) => ({
-        id: index + 1,
-        url: img.url,
-        style: img.style,
-      }));
-      setResults(formattedResults);
-    } catch (error) {
-      console.error('Error loading generated images:', error);
-      navigate('/');
-    }
-  }, [navigate]);
+    const formattedResults = generatedImages.map((img, index) => ({
+      id: index + 1,
+      url: img.url,
+      style: img.style,
+    }));
+    setResults(formattedResults);
+  }, [navigate, generatedImages]);
 
   const handleSaveAll = async () => {
     try {

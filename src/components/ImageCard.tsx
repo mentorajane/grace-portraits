@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Heart, Download, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useImageContext } from "@/contexts/ImageContext";
 
 interface ImageCardProps {
   image: {
@@ -13,29 +14,13 @@ interface ImageCardProps {
 
 const ImageCard = ({ image }: ImageCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(() => {
-    const favorites = localStorage.getItem('personaFavorites');
-    if (favorites) {
-      const favArray = JSON.parse(favorites);
-      return favArray.some((fav: any) => fav.id === image.id);
-    }
-    return false;
-  });
+  const { favoriteImages, toggleFavorite: contextToggleFavorite } = useImageContext();
+  
+  const isFavorite = favoriteImages.some((fav) => fav.url === image.url);
 
   const handleToggleFavorite = () => {
-    const favorites = localStorage.getItem('personaFavorites');
-    let favArray = favorites ? JSON.parse(favorites) : [];
-    
-    if (isFavorite) {
-      favArray = favArray.filter((fav: any) => fav.id !== image.id);
-      toast.success("Removido dos favoritos");
-    } else {
-      favArray.push(image);
-      toast.success("Adicionado aos favoritos");
-    }
-    
-    localStorage.setItem('personaFavorites', JSON.stringify(favArray));
-    setIsFavorite(!isFavorite);
+    contextToggleFavorite({ style: image.style, url: image.url });
+    toast.success(isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos");
   };
 
   const handleDownload = () => {

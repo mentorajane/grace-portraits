@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { Upload as UploadIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useImageContext } from "@/contexts/ImageContext";
 
 const Upload = () => {
   const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
+  const { setUploadedImage } = useImageContext();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Store image temporarily (in real app, would upload to server)
       const reader = new FileReader();
       reader.onloadend = () => {
-        sessionStorage.setItem('uploadedImage', reader.result as string);
+        setUploadedImage(reader.result as string);
         navigate('/processing');
       };
       reader.readAsDataURL(file);
@@ -35,7 +36,7 @@ const Upload = () => {
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        sessionStorage.setItem('uploadedImage', reader.result as string);
+        setUploadedImage(reader.result as string);
         navigate('/processing');
       };
       reader.readAsDataURL(file);
