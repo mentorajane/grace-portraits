@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const messages = [
   "A arte está tomando forma...",
@@ -26,14 +27,42 @@ const Processing = () => {
       setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
     }, 2800);
 
-    // Navigate to results after processing
-    const processingTimeout = setTimeout(() => {
-      navigate('/results');
-    }, 4500);
+    // Call AI generation function
+    const generateImages = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-persona`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ imageData: image }),
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Falha ao gerar imagens');
+        }
+
+        const data = await response.json();
+        
+        // Store generated images
+        sessionStorage.setItem('generatedImages', JSON.stringify(data.images));
+        
+        navigate('/results');
+      } catch (error) {
+        console.error('Error generating images:', error);
+        toast.error(error instanceof Error ? error.message : 'Erro ao processar imagem');
+        navigate('/');
+      }
+    };
+
+    generateImages();
 
     return () => {
       clearInterval(messageInterval);
-      clearTimeout(processingTimeout);
     };
   }, [navigate]);
 

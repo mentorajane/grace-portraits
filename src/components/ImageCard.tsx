@@ -39,8 +39,17 @@ const ImageCard = ({ image }: ImageCardProps) => {
   };
 
   const handleDownload = () => {
-    toast.success("Imagem salva!");
-    // In production: trigger actual download
+    try {
+      const link = document.createElement('a');
+      link.href = image.url;
+      link.download = `persona-${image.style.toLowerCase().replace(/\s+/g, '-')}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Imagem salva!");
+    } catch (error) {
+      toast.error("Erro ao salvar imagem");
+    }
   };
 
   const handleShare = async () => {

@@ -5,39 +5,53 @@ import { Button } from "@/components/ui/button";
 import { Download, Share2, BookMarked } from "lucide-react";
 import { toast } from "sonner";
 
-// Mock generated images - in production, these would come from API
-const mockResults = [
-  {
-    id: 1,
-    url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80",
-    style: "Visão Empresarial",
-  },
-  {
-    id: 2,
-    url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&q=80",
-    style: "Alma Criativa",
-  },
-  {
-    id: 3,
-    url: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80",
-    style: "Vibração Urbana",
-  },
-];
+interface GeneratedImage {
+  style: string;
+  url: string;
+}
 
 const Results = () => {
   const navigate = useNavigate();
-  const [results, setResults] = useState(mockResults);
+  const [results, setResults] = useState<Array<{ id: number; url: string; style: string }>>([]);
 
   useEffect(() => {
     const uploadedImage = sessionStorage.getItem('uploadedImage');
-    if (!uploadedImage) {
+    const generatedImagesStr = sessionStorage.getItem('generatedImages');
+    
+    if (!uploadedImage || !generatedImagesStr) {
+      navigate('/');
+      return;
+    }
+
+    try {
+      const generatedImages: GeneratedImage[] = JSON.parse(generatedImagesStr);
+      const formattedResults = generatedImages.map((img, index) => ({
+        id: index + 1,
+        url: img.url,
+        style: img.style,
+      }));
+      setResults(formattedResults);
+    } catch (error) {
+      console.error('Error loading generated images:', error);
       navigate('/');
     }
   }, [navigate]);
 
-  const handleSaveAll = () => {
-    toast.success("Todas as imagens foram salvas!");
-    // In production: trigger download of all images
+  const handleSaveAll = async () => {
+    try {
+      for (const result of results) {
+        const link = document.createElement('a');
+        link.href = result.url;
+        link.download = `persona-${result.style.toLowerCase().replace(/\s+/g, '-')}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      toast.success("Todas as imagens foram salvas!");
+    } catch (error) {
+      toast.error("Erro ao salvar imagens");
+    }
   };
 
   const handleShareAll = async () => {
