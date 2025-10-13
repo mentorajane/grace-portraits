@@ -8,29 +8,18 @@ import { useImageContext } from "@/contexts/ImageContext";
 
 const Results = () => {
   const navigate = useNavigate();
-  const { generatedImages } = useImageContext();
-  const [results, setResults] = useState<Array<{ id: number; url: string; style: string }>>([]);
+  const { generatedImages, loadImages } = useImageContext();
 
   useEffect(() => {
-    if (!generatedImages || generatedImages.length === 0) {
-      navigate('/');
-      return;
-    }
-
-    const formattedResults = generatedImages.map((img, index) => ({
-      id: index + 1,
-      url: img.url,
-      style: img.style,
-    }));
-    setResults(formattedResults);
-  }, [navigate, generatedImages]);
+    loadImages();
+  }, []);
 
   const handleSaveAll = async () => {
     try {
-      for (const result of results) {
+      for (const result of generatedImages) {
         const link = document.createElement('a');
-        link.href = result.url;
-        link.download = `persona-${result.style.toLowerCase().replace(/\s+/g, '-')}.png`;
+        link.href = result.generated_image_url;
+        link.download = `persona-${result.style_name.toLowerCase().replace(/\s+/g, '-')}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -75,9 +64,9 @@ const Results = () => {
         </div>
 
         {/* Image Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {results.map((result) => (
-            <ImageCard key={result.id} image={result} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {generatedImages.map((image) => (
+            <ImageCard key={image.id} image={image} />
           ))}
         </div>
 

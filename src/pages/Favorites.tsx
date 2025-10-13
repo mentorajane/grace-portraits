@@ -1,18 +1,17 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useImageContext } from "@/contexts/ImageContext";
 import ImageCard from "@/components/ImageCard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useImageContext } from "@/contexts/ImageContext";
 
 const Favorites = () => {
   const navigate = useNavigate();
-  const { favoriteImages } = useImageContext();
+  const { favoriteImages, loadImages } = useImageContext();
 
-  const favorites = favoriteImages.map((img, index) => ({
-    id: index + 1,
-    url: img.url,
-    style: img.style,
-  }));
+  useEffect(() => {
+    loadImages();
+  }, []);
 
   return (
     <div className="min-h-screen px-4 py-8 md:px-8 md:py-12 animate-fade-in">
@@ -33,18 +32,18 @@ const Favorites = () => {
               Meu Book de Favoritos
             </h1>
             <p className="text-lg md:text-xl text-persona-medium font-light">
-              {favorites.length === 0 
+              {favoriteImages.length === 0 
                 ? "Nenhuma foto favorita ainda"
-                : `${favorites.length} ${favorites.length === 1 ? 'foto' : 'fotos'} salva${favorites.length === 1 ? '' : 's'}`
+                : `${favoriteImages.length} ${favoriteImages.length === 1 ? 'foto' : 'fotos'} salva${favoriteImages.length === 1 ? '' : 's'}`
               }
             </p>
           </div>
         </div>
 
         {/* Favorites Grid */}
-        {favorites.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {favorites.map((image) => (
+        {favoriteImages.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {favoriteImages.map((image) => (
               <ImageCard key={image.id} image={image} />
             ))}
           </div>

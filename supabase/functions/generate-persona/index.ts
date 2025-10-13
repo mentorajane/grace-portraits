@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,9 +27,14 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     console.log('Starting image generation...');
 
-    // Generate 4 different styles
+    // Generate 6 different styles
     const styles = [
       {
         name: "Visão Empresarial",
@@ -45,6 +51,14 @@ serve(async (req) => {
       {
         name: "Essência Natural",
         prompt: "Create a natural outdoor portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: casual comfortable clothing, beautiful natural environment with soft natural lighting (beach, forest, or garden). The face and body MUST look identical to the original person."
+      },
+      {
+        name: "Glamour Fashion",
+        prompt: "Create a high fashion glamour portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: elegant haute couture fashion clothing, sophisticated studio setting with dramatic fashion lighting. The face and body MUST look identical to the original person."
+      },
+      {
+        name: "Aventura Radical",
+        prompt: "Create an adventure sports portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: active sportswear or adventure gear, dynamic outdoor action setting (mountain, surf, extreme sports), energetic lighting. The face and body MUST look identical to the original person."
       }
     ];
 
@@ -101,16 +115,59 @@ serve(async (req) => {
         }
 
         console.log(`Successfully generated ${style.name}`);
+
+        // Convert base64 to blob and upload to storage
+        const base64Data = generatedImageUrl.split(',')[1];
+        const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+        
+        const fileName = `${crypto.randomUUID()}-${style.name.toLowerCase().replace(/\s+/g, '-')}.png`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('persona-images')
+          .upload(fileName, binaryData, {
+            contentType: 'image/png',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error(`Upload error for ${style.name}:`, uploadError);
+          throw new Error(`Failed to upload ${style.name}`);
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('persona-images')
+          .getPublicUrl(fileName);
+
+        console.log(`Uploaded ${style.name} to storage: ${publicUrl}`);
         
         return {
           style: style.name,
-          url: generatedImageUrl
+          url: publicUrl
         };
       })
     );
 
+    // Save to database
+    const { data: insertData, error: insertError } = await supabase
+      .from('generated_images')
+      .insert(
+        generatedImages.map(img => ({
+          original_image_url: imageData.substring(0, 100) + '...', // Store truncated version
+          style_name: img.style,
+          generated_image_url: img.url,
+          is_favorite: false
+        }))
+      )
+      .select();
+
+    if (insertError) {
+      console.error('Database insert error:', insertError);
+      throw new Error('Failed to save images to database');
+    }
+
+    console.log('Successfully saved all images to database');
+
     return new Response(
-      JSON.stringify({ images: generatedImages }),
+      JSON.stringify({ images: insertData }),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

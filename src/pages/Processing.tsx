@@ -50,6 +50,7 @@ const Processing = () => {
         // Store generated images in context
         setGeneratedImages(data.images);
         
+        // Navigate to results
         navigate('/results');
       } catch (error) {
         console.error('Error generating images:', error);

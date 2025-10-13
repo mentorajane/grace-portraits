@@ -6,28 +6,27 @@ import { useImageContext } from "@/contexts/ImageContext";
 
 interface ImageCardProps {
   image: {
-    id: number;
-    url: string;
-    style: string;
+    id: string;
+    style_name: string;
+    generated_image_url: string;
+    is_favorite: boolean;
   };
 }
 
 const ImageCard = ({ image }: ImageCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { favoriteImages, toggleFavorite: contextToggleFavorite } = useImageContext();
-  
-  const isFavorite = favoriteImages.some((fav) => fav.url === image.url);
+  const { toggleFavorite } = useImageContext();
 
   const handleToggleFavorite = () => {
-    contextToggleFavorite({ style: image.style, url: image.url });
-    toast.success(isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos");
+    toggleFavorite(image.id);
+    toast.success(image.is_favorite ? "Removido dos favoritos" : "Adicionado aos favoritos");
   };
 
   const handleDownload = () => {
     try {
       const link = document.createElement('a');
-      link.href = image.url;
-      link.download = `persona-${image.style.toLowerCase().replace(/\s+/g, '-')}.png`;
+      link.href = image.generated_image_url;
+      link.download = `persona-${image.style_name.toLowerCase().replace(/\s+/g, '-')}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -41,8 +40,8 @@ const ImageCard = ({ image }: ImageCardProps) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Persona - ${image.style}`,
-          text: `Confira minha foto Persona no estilo ${image.style}!`,
+          title: `Persona - ${image.style_name}`,
+          text: `Confira minha foto Persona no estilo ${image.style_name}!`,
         });
       } catch (err) {
         console.log('Share cancelled');
@@ -68,8 +67,8 @@ const ImageCard = ({ image }: ImageCardProps) => {
 
           {/* Image */}
           <img
-            src={image.url}
-            alt={image.style}
+            src={image.generated_image_url}
+            alt={image.style_name}
             className="w-full h-auto max-h-[70vh] object-contain rounded-xl animate-scale-in"
           />
 
@@ -82,7 +81,7 @@ const ImageCard = ({ image }: ImageCardProps) => {
               className="bg-white/10 hover:bg-white/20 text-white rounded-full w-14 h-14"
             >
               <Heart
-                className={`w-6 h-6 ${isFavorite ? 'fill-current text-red-500' : ''}`}
+                className={`w-6 h-6 ${image.is_favorite ? 'fill-current text-red-500' : ''}`}
               />
             </Button>
             
@@ -116,8 +115,8 @@ const ImageCard = ({ image }: ImageCardProps) => {
     >
       <div className="relative aspect-[3/4] overflow-hidden rounded-2xl shadow-elegant hover:shadow-medium transition-smooth">
         <img
-          src={image.url}
-          alt={image.style}
+          src={image.generated_image_url}
+          alt={image.style_name}
           className="w-full h-full object-cover transition-smooth group-hover:scale-105"
         />
         
@@ -132,7 +131,7 @@ const ImageCard = ({ image }: ImageCardProps) => {
       
       {/* Style label */}
       <p className="mt-4 text-center text-persona-subtle font-light text-sm">
-        {image.style}
+        {image.style_name}
       </p>
     </div>
   );
