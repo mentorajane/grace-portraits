@@ -28,19 +28,23 @@ serve(async (req) => {
 
     console.log('Starting image generation...');
 
-    // Generate 3 different styles
+    // Generate 4 different styles
     const styles = [
       {
         name: "Visão Empresarial",
-        prompt: "Transform this person into a professional corporate executive portrait. The person should be wearing elegant business attire (suit or blazer), positioned in a modern corporate office environment with subtle lighting. Professional studio quality, sharp focus, neutral sophisticated background. Maintain the person's facial features and identity."
+        prompt: "Create a professional corporate portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: elegant business attire (suit or blazer), modern corporate office background with professional lighting. The face and body MUST look identical to the original person."
       },
       {
         name: "Alma Criativa",
-        prompt: "Transform this person into an artistic creative portrait. The person should have a bohemian artistic style with creative casual clothing, positioned in an artistic urban setting with colorful murals or art studio background. Artistic moody lighting with vibrant colors. Maintain the person's facial features and identity."
+        prompt: "Create an artistic portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: bohemian artistic clothing, artistic urban setting with colorful murals or art studio background, moody lighting. The face and body MUST look identical to the original person."
       },
       {
         name: "Vibração Urbana",
-        prompt: "Transform this person into an urban street style portrait. The person should be wearing trendy streetwear fashion (leather jacket or urban casual), positioned in a vibrant city street with colorful neon lights or graffiti background. Dynamic urban atmosphere with modern edge. Maintain the person's facial features and identity."
+        prompt: "Create an urban street style portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: trendy streetwear fashion (leather jacket or urban casual), vibrant city street with neon lights or graffiti background. The face and body MUST look identical to the original person."
+      },
+      {
+        name: "Essência Natural",
+        prompt: "Create a natural outdoor portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: casual comfortable clothing, beautiful natural environment with soft natural lighting (beach, forest, or garden). The face and body MUST look identical to the original person."
       }
     ];
 
