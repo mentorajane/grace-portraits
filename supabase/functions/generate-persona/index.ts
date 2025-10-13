@@ -120,7 +120,15 @@ serve(async (req) => {
         const base64Data = generatedImageUrl.split(',')[1];
         const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
         
-        const fileName = `${crypto.randomUUID()}-${style.name.toLowerCase().replace(/\s+/g, '-')}.png`;
+        // Sanitize filename by removing accents and special characters
+        const sanitizedName = style.name
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // Remove accents
+          .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+          .replace(/\s+/g, '-'); // Replace spaces with hyphens
+        
+        const fileName = `${crypto.randomUUID()}-${sanitizedName}.png`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('persona-images')
           .upload(fileName, binaryData, {
