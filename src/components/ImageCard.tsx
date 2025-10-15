@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Download, Share2, X } from "lucide-react";
+import { Heart, Download, Share2, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useImageContext } from "@/contexts/ImageContext";
@@ -15,7 +15,7 @@ interface ImageCardProps {
 
 const ImageCard = ({ image }: ImageCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { toggleFavorite } = useImageContext();
+  const { toggleFavorite, deleteImage } = useImageContext();
 
   const handleToggleFavorite = () => {
     toggleFavorite(image.id);
@@ -49,6 +49,12 @@ const ImageCard = ({ image }: ImageCardProps) => {
     } else {
       toast.info("Compartilhamento não disponível neste navegador");
     }
+  };
+
+  const handleDelete = async () => {
+    await deleteImage(image.id);
+    setIsExpanded(false);
+    toast.success("Imagem excluída com sucesso");
   };
 
   if (isExpanded) {
@@ -101,6 +107,15 @@ const ImageCard = ({ image }: ImageCardProps) => {
               className="bg-white/10 hover:bg-white/20 text-white rounded-full w-14 h-14"
             >
               <Share2 className="w-6 h-6" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDelete}
+              className="bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-full w-14 h-14"
+            >
+              <Trash2 className="w-6 h-6" />
             </Button>
           </div>
         </div>

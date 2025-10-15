@@ -16,6 +16,7 @@ type ImageContextType = {
   setGeneratedImages: (images: GeneratedImage[]) => void;
   favoriteImages: GeneratedImage[];
   toggleFavorite: (imageId: string) => void;
+  deleteImage: (imageId: string) => Promise<void>;
   loadImages: () => Promise<void>;
 };
 
@@ -73,6 +74,34 @@ export const ImageProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const deleteImage = async (imageId: string) => {
+    const image = generatedImages.find(img => img.id === imageId);
+    if (!image) return;
+
+    // Extract filename from URL
+    const fileName = image.generated_image_url.split('/').pop();
+    if (fileName) {
+      await supabase.storage
+        .from('persona-images')
+        .remove([fileName]);
+    }
+
+    // Delete from database
+    const { error } = await supabase
+      .from('generated_images')
+      .delete()
+      .eq('id', imageId);
+
+    if (error) {
+      console.error('Error deleting image:', error);
+      return;
+    }
+
+    // Update local state
+    setGeneratedImages(prev => prev.filter(img => img.id !== imageId));
+    setFavoriteImages(prev => prev.filter(img => img.id !== imageId));
+  };
+
   useEffect(() => {
     loadImages();
   }, []);
@@ -86,6 +115,7 @@ export const ImageProvider = ({ children }: { children: ReactNode }) => {
         setGeneratedImages,
         favoriteImages,
         toggleFavorite,
+        deleteImage,
         loadImages,
       }}
     >

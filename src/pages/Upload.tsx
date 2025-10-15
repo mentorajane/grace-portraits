@@ -6,6 +6,7 @@ import { useImageContext } from "@/contexts/ImageContext";
 const Upload = () => {
   const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
+  const [clothingImage, setClothingImage] = useState<string | null>(null);
   const { setUploadedImage } = useImageContext();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -15,6 +16,17 @@ const Upload = () => {
       reader.onloadend = () => {
         setUploadedImage(reader.result as string);
         navigate('/processing');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleClothingSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setClothingImage(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -91,9 +103,41 @@ const Upload = () => {
           </label>
         </div>
 
-        <p className="text-sm md:text-base text-persona-subtle font-light">
-          Toque para iniciar sua sessão de foto.
-        </p>
+        <div className="space-y-4">
+          <p className="text-sm md:text-base text-persona-subtle font-light">
+            Toque para iniciar sua sessão de foto.
+          </p>
+          
+          <div className="border-t border-persona-subtle/20 pt-6">
+            <label
+              htmlFor="clothing-upload"
+              className="cursor-pointer"
+            >
+              <div className="flex items-center justify-center gap-3 p-4 border border-dashed border-persona-subtle/50 rounded-xl hover:border-persona-medium transition-smooth">
+                {clothingImage ? (
+                  <div className="flex items-center gap-3">
+                    <img src={clothingImage} alt="Roupa" className="w-12 h-12 rounded object-cover" />
+                    <span className="text-sm text-persona-medium">Roupa selecionada</span>
+                  </div>
+                ) : (
+                  <>
+                    <UploadIcon className="w-5 h-5 text-persona-medium" />
+                    <span className="text-sm text-persona-medium">
+                      Adicionar foto de roupa (opcional)
+                    </span>
+                  </>
+                )}
+              </div>
+              <input
+                id="clothing-upload"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleClothingSelect}
+              />
+            </label>
+          </div>
+        </div>
       </div>
     </div>
   );

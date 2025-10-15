@@ -57,8 +57,12 @@ serve(async (req) => {
         prompt: "Create a high fashion glamour portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: elegant haute couture fashion clothing, sophisticated studio setting with dramatic fashion lighting. The face and body MUST look identical to the original person."
       },
       {
-        name: "Aventura Radical",
-        prompt: "Create an adventure sports portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: active sportswear or adventure gear, dynamic outdoor action setting (mountain, surf, extreme sports), energetic lighting. The face and body MUST look identical to the original person."
+        name: "Home Office",
+        prompt: "Create a home office portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: smart casual clothing (button-down shirt or blouse), modern home office setting with bookshelf, plants, and natural window lighting. The face and body MUST look identical to the original person."
+      },
+      {
+        name: "Estilo de Vida",
+        prompt: "Create a lifestyle portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: relaxed casual clothing, cozy lifestyle setting like a cafe, living room, or outdoor leisure space with warm natural lighting. The face and body MUST look identical to the original person."
       }
     ];
 
