@@ -40,12 +40,24 @@ const Processing = () => {
           }
         );
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Falha ao gerar imagens');
+        const responseText = await response.text();
+        let data: { images?: unknown; error?: string } = {};
+
+        try {
+          data = responseText ? JSON.parse(responseText) : {};
+        } catch {
+          data = {};
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+          if (response.status === 402) {
+            throw new Error('Créditos de IA esgotados no workspace. Adicione créditos para continuar.');
+          }
+          if (response.status === 429) {
+            throw new Error('Muitas tentativas em sequência. Aguarde alguns segundos e tente novamente.');
+          }
+          throw new Error(data.error || 'Falha ao gerar imagens');
+        }
         
         // Store generated images in context
         setGeneratedImages(data.images);

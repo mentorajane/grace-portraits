@@ -101,14 +101,14 @@ serve(async (req) => {
 
         if (!response.ok) {
           if (response.status === 429) {
-            throw new Error('Rate limit exceeded. Please try again later.');
+            throw new Error('RATE_LIMIT_EXCEEDED:Rate limit exceeded. Please try again later.');
           }
           if (response.status === 402) {
-            throw new Error('Payment required. Please add credits to your workspace.');
+            throw new Error('PAYMENT_REQUIRED:Payment required. Please add credits to your workspace.');
           }
           const errorText = await response.text();
           console.error(`AI gateway error for ${style.name}:`, response.status, errorText);
-          throw new Error(`Failed to generate ${style.name}`);
+          throw new Error(`AI_GATEWAY_ERROR:Failed to generate ${style.name}`);
         }
 
         const data = await response.json();
