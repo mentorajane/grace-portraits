@@ -188,10 +188,34 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in generate-persona function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to generate images';
+
+    const rawMessage = error instanceof Error ? error.message : 'Failed to generate images';
+
+    if (rawMessage.startsWith('PAYMENT_REQUIRED:')) {
+      return new Response(
+        JSON.stringify({ error: rawMessage.replace('PAYMENT_REQUIRED:', '') }),
+        {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    if (rawMessage.startsWith('RATE_LIMIT_EXCEEDED:')) {
+      return new Response(
+        JSON.stringify({ error: rawMessage.replace('RATE_LIMIT_EXCEEDED:', '') }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const errorMessage = rawMessage.replace('AI_GATEWAY_ERROR:', '');
+
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { 
+      {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
