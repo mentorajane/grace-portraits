@@ -40,15 +40,31 @@ const Processing = () => {
           }
         );
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Falha ao gerar imagens');
+        const responseText = await response.text();
+        let data: { images?: unknown; error?: string } = {};
+
+        try {
+          data = responseText ? JSON.parse(responseText) : {};
+        } catch {
+          data = {};
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+          if (response.status === 402) {
+            throw new Error('Créditos de IA esgotados no workspace. Adicione créditos para continuar.');
+          }
+          if (response.status === 429) {
+            throw new Error('Muitas tentativas em sequência. Aguarde alguns segundos e tente novamente.');
+          }
+          throw new Error(data.error || 'Falha ao gerar imagens');
+        }
         
+        if (!Array.isArray(data.images)) {
+          throw new Error('Resposta inválida ao gerar imagens');
+        }
+
         // Store generated images in context
-        setGeneratedImages(data.images);
+        setGeneratedImages(data.images as Parameters<typeof setGeneratedImages>[0]);
         
         // Navigate to results
         navigate('/results');
@@ -64,7 +80,7 @@ const Processing = () => {
     return () => {
       clearInterval(messageInterval);
     };
-  }, [navigate]);
+  }, [navigate, uploadedImage, setGeneratedImages]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden">
