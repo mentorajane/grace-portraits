@@ -4,8 +4,50 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+const AI_MODEL = 'google/gemini-2.5-flash-image';
+const MAX_STYLES_PER_REQUEST = 3;
+
+const sanitizeStyleName = (styleName: string) =>
+  styleName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-');
+
+const extractBase64Image = (imageUrl: string) => {
+  const base64Data = imageUrl.split(',')[1];
+
+  if (!base64Data) {
+    throw new Error('Invalid generated image payload');
+  }
+
+  return Uint8Array.from(atob(base64Data), (char) => char.charCodeAt(0));
+};
+
+const normalizeQuotaError = (status: number) => {
+  if (status === 402) {
+    return 'PAYMENT_REQUIRED:Payment required. Please add credits to your workspace.';
+  }
+
+  if (status === 429) {
+    return 'RATE_LIMIT_EXCEEDED:Rate limit exceeded. Please try again later.';
+  }
+
+  return null;
+};
+
+const isQuotaError = (message: string) =>
+  message.startsWith('PAYMENT_REQUIRED:') || message.startsWith('RATE_LIMIT_EXCEEDED:');
+
+const getReadableError = (message: string) =>
+  message
+    .replace('PAYMENT_REQUIRED:', '')
+    .replace('RATE_LIMIT_EXCEEDED:', '')
+    .replace('AI_GATEWAY_ERROR:', '');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -34,7 +76,7 @@ serve(async (req) => {
 
     console.log('Starting image generation...');
 
-    // Generate 6 different styles
+    // Reduced batch size for lower AI usage and more reliable free-tier behavior
     const styles = [
       {
         name: "Visão Empresarial",
@@ -66,10 +108,14 @@ serve(async (req) => {
       }
     ];
 
-    const generatedImages = await Promise.all(
-      styles.map(async (style) => {
+    const selectedStyles = styles.slice(0, MAX_STYLES_PER_REQUEST);
+    const generatedImages: Array<{ style: string; url: string }> = [];
+    let warningMessage: string | null = null;
+
+    for (const style of selectedStyles) {
+      try {
         console.log(`Generating ${style.name}...`);
-        
+
         const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -77,7 +123,7 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash-image-preview',
+            model: AI_MODEL,
             messages: [
               {
                 role: 'user',
@@ -100,12 +146,12 @@ serve(async (req) => {
         });
 
         if (!response.ok) {
-          if (response.status === 429) {
-            throw new Error('RATE_LIMIT_EXCEEDED:Rate limit exceeded. Please try again later.');
+          const quotaError = normalizeQuotaError(response.status);
+
+          if (quotaError) {
+            throw new Error(quotaError);
           }
-          if (response.status === 402) {
-            throw new Error('PAYMENT_REQUIRED:Payment required. Please add credits to your workspace.');
-          }
+
           const errorText = await response.text();
           console.error(`AI gateway error for ${style.name}:`, response.status, errorText);
           throw new Error(`AI_GATEWAY_ERROR:Failed to generate ${style.name}`);
@@ -113,27 +159,16 @@ serve(async (req) => {
 
         const data = await response.json();
         const generatedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-        
+
         if (!generatedImageUrl) {
           throw new Error(`No image generated for ${style.name}`);
         }
 
         console.log(`Successfully generated ${style.name}`);
 
-        // Convert base64 to blob and upload to storage
-        const base64Data = generatedImageUrl.split(',')[1];
-        const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-        
-        // Sanitize filename by removing accents and special characters
-        const sanitizedName = style.name
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '') // Remove accents
-          .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
-          .replace(/\s+/g, '-'); // Replace spaces with hyphens
-        
-        const fileName = `${crypto.randomUUID()}-${sanitizedName}.png`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const binaryData = extractBase64Image(generatedImageUrl);
+        const fileName = `${crypto.randomUUID()}-${sanitizeStyleName(style.name)}.png`;
+        const { error: uploadError } = await supabase.storage
           .from('persona-images')
           .upload(fileName, binaryData, {
             contentType: 'image/png',
@@ -150,13 +185,27 @@ serve(async (req) => {
           .getPublicUrl(fileName);
 
         console.log(`Uploaded ${style.name} to storage: ${publicUrl}`);
-        
-        return {
+
+        generatedImages.push({
           style: style.name,
           url: publicUrl
-        };
-      })
-    );
+        });
+      } catch (error) {
+        const rawMessage = error instanceof Error ? error.message : 'Failed to generate images';
+
+        if (generatedImages.length > 0 && isQuotaError(rawMessage)) {
+          warningMessage = getReadableError(rawMessage);
+          console.warn(`Generation stopped early after partial success: ${warningMessage}`);
+          break;
+        }
+
+        throw error;
+      }
+    }
+
+    if (generatedImages.length === 0) {
+      throw new Error('AI_GATEWAY_ERROR:No images were generated');
+    }
 
     // Save to database
     const { data: insertData, error: insertError } = await supabase
@@ -179,7 +228,11 @@ serve(async (req) => {
     console.log('Successfully saved all images to database');
 
     return new Response(
-      JSON.stringify({ images: insertData }),
+      JSON.stringify({
+        images: insertData,
+        partial: Boolean(warningMessage),
+        warning: warningMessage
+      }),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -211,7 +264,7 @@ serve(async (req) => {
       );
     }
 
-    const errorMessage = rawMessage.replace('AI_GATEWAY_ERROR:', '');
+    const errorMessage = getReadableError(rawMessage);
 
     return new Response(
       JSON.stringify({ error: errorMessage }),
