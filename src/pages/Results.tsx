@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ImageCard from "@/components/ImageCard";
 import { Button } from "@/components/ui/button";
-import { Download, BookMarked } from "lucide-react";
+import { Download, BookMarked, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { useImageContext } from "@/contexts/ImageContext";
 
@@ -46,6 +46,16 @@ const Results = () => {
           <p className="text-lg md:text-xl text-persona-medium font-light">
             Sua essência, reinventada.
           </p>
+          <div className="flex justify-center pt-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/')}
+              className="rounded-full border-persona-subtle/40 text-persona-dark hover:bg-persona-light"
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Nova sessão de fotos
+            </Button>
+          </div>
         </div>
 
         {/* Image Grid */}
