@@ -102,35 +102,37 @@ serve(async (req) => {
 
     console.log('Starting image generation...');
 
-    // Reduced batch size for lower AI usage and more reliable free-tier behavior
+    // IDENTITY-LOCK PREFIX: applied to every style to force exact facial preservation
+    const IDENTITY_LOCK = "CRITICAL IDENTITY PRESERVATION TASK: This is a photo edit, NOT a new person generation. You MUST preserve the EXACT same person from the reference photo with 100% facial fidelity. DO NOT alter, stylize, beautify, age, slim, or modify ANY facial feature. Keep IDENTICAL: face shape and proportions, jawline, cheekbones, forehead, eye shape and color, eyebrow shape, nose shape and size, lip shape, mouth, chin, ears, skin tone and texture, freckles/marks/moles, hair color/texture/length/style, facial hair, body type, height proportions, and overall silhouette. The output face must be recognizable as THE SAME PERSON — a friend should instantly identify them. Treat the original face as a locked reference; only the clothing, background, and lighting may change. ";
+
     const styles = [
       {
         name: "Visão Empresarial",
-        prompt: "Create a professional corporate portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: elegant business attire (suit or blazer), modern corporate office background with professional lighting. The face and body MUST look identical to the original person."
+        prompt: IDENTITY_LOCK + "SCENE CHANGE ONLY: Dress the same person in elegant business attire (well-tailored suit or blazer). Place them in a modern corporate office background with soft professional lighting. Keep the same pose and framing as the original photo whenever possible."
       },
       {
         name: "Alma Criativa",
-        prompt: "Create an artistic portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: bohemian artistic clothing, artistic urban setting with colorful murals or art studio background, moody lighting. The face and body MUST look identical to the original person."
+        prompt: IDENTITY_LOCK + "SCENE CHANGE ONLY: Dress the same person in bohemian artistic clothing. Place them in an artistic setting with colorful murals or an art studio background, with moody warm lighting. Keep the same pose and framing as the original photo whenever possible."
       },
       {
         name: "Vibração Urbana",
-        prompt: "Create an urban street style portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: trendy streetwear fashion (leather jacket or urban casual), vibrant city street with neon lights or graffiti background. The face and body MUST look identical to the original person."
+        prompt: IDENTITY_LOCK + "SCENE CHANGE ONLY: Dress the same person in trendy streetwear (leather jacket or modern urban casual). Place them in a vibrant city street with neon lights or tasteful graffiti in the background. Keep the same pose and framing as the original photo whenever possible. Do NOT change the face — only wardrobe and environment."
       },
       {
         name: "Essência Natural",
-        prompt: "Create a natural outdoor portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: casual comfortable clothing, beautiful natural environment with soft natural lighting (beach, forest, or garden). The face and body MUST look identical to the original person."
+        prompt: IDENTITY_LOCK + "SCENE CHANGE ONLY: Dress the same person in comfortable casual clothing. Place them in a beautiful natural environment with soft natural lighting (beach, forest, or garden). Keep the same pose and framing as the original photo whenever possible."
       },
       {
         name: "Glamour Fashion",
-        prompt: "Create a high fashion glamour portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: elegant haute couture fashion clothing, sophisticated studio setting with dramatic fashion lighting. The face and body MUST look identical to the original person."
+        prompt: IDENTITY_LOCK + "SCENE CHANGE ONLY: Dress the same person in elegant haute couture fashion. Place them in a sophisticated studio setting with dramatic fashion lighting. Keep the same pose and framing as the original photo whenever possible."
       },
       {
         name: "Home Office",
-        prompt: "Create a home office portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: smart casual clothing (button-down shirt or blouse), modern home office setting with bookshelf, plants, and natural window lighting. The face and body MUST look identical to the original person."
+        prompt: IDENTITY_LOCK + "SCENE CHANGE ONLY: Dress the same person in smart casual clothing (button-down shirt or blouse). Place them in a modern home office with bookshelf, plants, and natural window lighting. Keep the same pose and framing as the original photo whenever possible."
       },
       {
         name: "Estilo de Vida",
-        prompt: "Create a lifestyle portrait maintaining EXACTLY the same face, facial features, body proportions, and silhouette from the original photo. Keep the person's exact likeness, face shape, eyes, nose, mouth, skin tone, hair, body type and posture. Only change: relaxed casual clothing, cozy lifestyle setting like a cafe, living room, or outdoor leisure space with warm natural lighting. The face and body MUST look identical to the original person."
+        prompt: IDENTITY_LOCK + "SCENE CHANGE ONLY: Dress the same person in relaxed casual clothing. Place them in a cozy lifestyle setting like a cafe, living room, or outdoor leisure space with warm natural lighting. Keep the same pose and framing as the original photo whenever possible. Do NOT change the face — only wardrobe and environment."
       }
     ];
 
