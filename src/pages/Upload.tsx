@@ -94,6 +94,16 @@ const Upload = () => {
           <p className="text-lg md:text-xl text-persona-medium font-light">
             Sua visão. Nossa arte.
           </p>
+          <div className="flex justify-center pt-2">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/favorites')}
+              className="text-persona-medium hover:text-persona-dark rounded-full"
+            >
+              <Heart className="w-4 h-4 mr-2" />
+              Ver votados
+            </Button>
+          </div>
         </div>
 
         <div className="flex justify-center">
