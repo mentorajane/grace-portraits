@@ -128,11 +128,11 @@ const ImageCard = ({ image }: ImageCardProps) => {
       className="group relative cursor-pointer animate-scale-in"
       onClick={() => setIsExpanded(true)}
     >
-      <div className="relative aspect-[3/4] overflow-hidden rounded-2xl shadow-elegant hover:shadow-medium transition-smooth">
+      <div className="relative overflow-hidden rounded-2xl shadow-elegant hover:shadow-medium transition-smooth bg-persona-light">
         <img
           src={image.generated_image_url}
           alt={image.style_name}
-          className="w-full h-full object-cover transition-smooth group-hover:scale-105"
+          className="w-full h-auto object-contain transition-smooth group-hover:scale-105"
         />
         
         {/* Persona watermark */}
