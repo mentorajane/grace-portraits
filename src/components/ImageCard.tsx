@@ -144,20 +144,19 @@ const ImageCard = ({ image }: ImageCardProps) => {
     return (
       <div className="fixed inset-0 z-50 bg-black/95 flex flex-col animate-fade-in overflow-y-auto">
         {/* Top bar - sempre visível */}
-        <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-black/80 backdrop-blur-md border-b border-white/10">
+        <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-black border-b border-white/20 shadow-lg">
           <Button
-            variant="ghost"
             onClick={() => setIsExpanded(false)}
-            className="text-white hover:bg-white/10 rounded-full"
+            className="bg-white text-black hover:bg-white/90 rounded-full px-5 h-10 font-medium"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
-            Voltar
+            Voltar ao álbum
           </Button>
           <Button
-            variant="ghost"
             size="icon"
             onClick={() => setIsExpanded(false)}
-            className="bg-white/10 hover:bg-white/20 text-white rounded-full"
+            className="bg-white text-black hover:bg-white/90 rounded-full w-10 h-10"
+            aria-label="Fechar"
           >
             <X className="w-5 h-5" />
           </Button>
