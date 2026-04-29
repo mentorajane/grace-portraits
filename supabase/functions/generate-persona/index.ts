@@ -55,12 +55,38 @@ serve(async (req) => {
   }
 
   try {
-    const { imageData } = await req.json();
-    
+    let imageData: string | undefined;
+    try {
+      const bodyText = await req.text();
+      if (!bodyText) {
+        return new Response(
+          JSON.stringify({ error: 'Request body is empty' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const parsed = JSON.parse(bodyText);
+      imageData = parsed.imageData;
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError);
+      return new Response(
+        JSON.stringify({ error: 'A imagem é muito grande ou está corrompida. Tente uma imagem menor (até 4MB).' }),
+        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!imageData) {
       return new Response(
         JSON.stringify({ error: 'Image data is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Reject oversized payloads early (base64 ~ 1.37x raw size)
+    const approxBytes = (imageData.length * 3) / 4;
+    if (approxBytes > 5 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: 'Imagem maior que 5MB. Por favor, envie uma imagem menor.' }),
+        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
