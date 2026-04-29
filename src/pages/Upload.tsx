@@ -79,12 +79,7 @@ const Upload = () => {
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadedImage(reader.result as string);
-        navigate('/processing');
-      };
-      reader.readAsDataURL(file);
+      processFile(file);
     }
   };
 
