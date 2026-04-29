@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Download, Copy, FileText, X, Trash2 } from "lucide-react";
+import { Heart, Download, Copy, FileText, X, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useImageContext } from "@/contexts/ImageContext";
