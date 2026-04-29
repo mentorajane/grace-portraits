@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Download, Copy, FileText, X, Trash2 } from "lucide-react";
+import { Heart, Download, Copy, FileText, X, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useImageContext } from "@/contexts/ImageContext";
@@ -142,21 +142,32 @@ const ImageCard = ({ image }: ImageCardProps) => {
 
   if (isExpanded) {
     return (
-      <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
-        <div className="relative max-w-4xl w-full flex flex-col my-8">
+      <div className="fixed inset-0 z-50 bg-black/95 flex flex-col animate-fade-in overflow-y-auto">
+        {/* Top bar - sempre visível */}
+        <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-black/80 backdrop-blur-md border-b border-white/10">
+          <Button
+            variant="ghost"
+            onClick={() => setIsExpanded(false)}
+            className="text-white hover:bg-white/10 rounded-full"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Voltar
+          </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsExpanded(false)}
-            className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full"
+            className="bg-white/10 hover:bg-white/20 text-white rounded-full"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </Button>
+        </div>
 
+        <div className="relative max-w-4xl w-full mx-auto flex flex-col p-4 md:p-6">
           <img
             src={image.generated_image_url}
             alt={image.style_name}
-            className="w-full h-auto max-h-[70vh] object-contain rounded-xl animate-scale-in"
+            className="w-full h-auto max-h-[50vh] md:max-h-[60vh] object-contain rounded-xl animate-scale-in"
           />
 
           <div className="flex items-center justify-center gap-3 mt-6 animate-fade-in flex-wrap">
