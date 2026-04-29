@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ImageCard from "@/components/ImageCard";
 import { Button } from "@/components/ui/button";
-import { Download, Share2, BookMarked } from "lucide-react";
+import { Download, BookMarked } from "lucide-react";
 import { toast } from "sonner";
 import { useImageContext } from "@/contexts/ImageContext";
 
@@ -28,21 +28,6 @@ const Results = () => {
       toast.success("Todas as imagens foram salvas!");
     } catch (error) {
       toast.error("Erro ao salvar imagens");
-    }
-  };
-
-  const handleShareAll = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Minhas fotos Persona',
-          text: 'Confira minhas fotos criadas com Persona!',
-        });
-      } catch (err) {
-        console.log('Share cancelled');
-      }
-    } else {
-      toast.info("Compartilhamento não disponível neste navegador");
     }
   };
 
@@ -81,16 +66,6 @@ const Results = () => {
             Salvar Imagens
           </Button>
           
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={handleShareAll}
-            className="w-full sm:w-auto border-2 border-persona-dark text-persona-dark hover:bg-persona-dark hover:text-white font-light px-8 py-6 rounded-full transition-smooth"
-          >
-            <Share2 className="w-5 h-5 mr-2" />
-            Compartilhar Tudo
-          </Button>
-
           <Button
             size="lg"
             variant="ghost"
