@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ImageCard from "@/components/ImageCard";
 import { Button } from "@/components/ui/button";
-import { Download, BookMarked } from "lucide-react";
+import { Download, BookMarked, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { useImageContext } from "@/contexts/ImageContext";
 
