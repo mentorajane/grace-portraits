@@ -12,6 +12,8 @@ type GeneratedImage = {
 type ImageContextType = {
   uploadedImage: string | null;
   setUploadedImage: (image: string | null) => void;
+  selectedStyles: string[];
+  setSelectedStyles: (styles: string[]) => void;
   generatedImages: GeneratedImage[];
   setGeneratedImages: (images: GeneratedImage[]) => void;
   favoriteImages: GeneratedImage[];
@@ -24,6 +26,7 @@ const ImageContext = createContext<ImageContextType | undefined>(undefined);
 
 export const ImageProvider = ({ children }: { children: ReactNode }) => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [favoriteImages, setFavoriteImages] = useState<GeneratedImage[]>([]);
 
@@ -111,6 +114,8 @@ export const ImageProvider = ({ children }: { children: ReactNode }) => {
       value={{
         uploadedImage,
         setUploadedImage,
+        selectedStyles,
+        setSelectedStyles,
         generatedImages,
         setGeneratedImages,
         favoriteImages,
