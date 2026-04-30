@@ -182,6 +182,7 @@ export const STYLE_PROMPTS: Record<string, string> = STYLE_DEFINITIONS.reduce(
 
 export const buildFullPrompt = (styleName: string): string => {
   const scene = STYLE_PROMPTS[styleName] ?? "";
+  const scenePt = STYLE_PROMPTS_PT[styleName] ?? "";
   const params = [
     `Model: ${AI_PARAMETERS.model}`,
     `Modalities: ${AI_PARAMETERS.modalities.join(", ")}`,
@@ -189,7 +190,7 @@ export const buildFullPrompt = (styleName: string): string => {
     `Style: ${styleName}`,
   ].join("\n");
 
-  return `# Persona — ${styleName}\n\n## Parameters\n${params}\n\n## Identity Lock\n${IDENTITY_LOCK}\n\n## Scene\n${scene}`;
+  return `# Persona — ${styleName}\n\n## Parâmetros\n${params}\n\n## Identity Lock (EN)\n${IDENTITY_LOCK}\n\n## Trava de Identidade (PT-BR)\n${IDENTITY_LOCK_PT}\n\n## Scene (EN)\n${scene}\n\n## Cena (PT-BR)\n${scenePt}`;
 };
 
 export const MAX_STYLES_PER_REQUEST = 3;
