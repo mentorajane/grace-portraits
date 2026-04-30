@@ -160,6 +160,14 @@ const Processing = () => {
                 {messages[currentMessageIndex]}
               </p>
             </div>
+
+            <Button
+              variant="outline"
+              onClick={() => navigate('/select-styles')}
+              className="rounded-full border-persona-subtle/40 text-persona-dark hover:bg-persona-light"
+            >
+              Voltar e alterar estilos
+            </Button>
           </div>
         )}
       </div>
