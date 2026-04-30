@@ -44,7 +44,7 @@ const Upload = () => {
     try {
       const compressed = await compressImage(file);
       setUploadedImage(compressed);
-      navigate('/processing');
+      navigate('/select-styles');
     } catch (err) {
       console.error('Image processing failed:', err);
     }

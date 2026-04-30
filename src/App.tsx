@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Upload from "./pages/Upload";
 import Processing from "./pages/Processing";
+import SelectStyles from "./pages/SelectStyles";
 import Results from "./pages/Results";
 import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
@@ -20,6 +21,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Upload />} />
           <Route path="/index" element={<Upload />} />
+          <Route path="/select-styles" element={<SelectStyles />} />
           <Route path="/processing" element={<Processing />} />
           <Route path="/results" element={<Results />} />
           <Route path="/favorites" element={<Favorites />} />

@@ -16,11 +16,15 @@ const Processing = () => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
-  const { uploadedImage, setGeneratedImages } = useImageContext();
+  const { uploadedImage, selectedStyles, setGeneratedImages } = useImageContext();
 
   useEffect(() => {
     if (!uploadedImage) {
       navigate('/');
+      return;
+    }
+    if (!selectedStyles || selectedStyles.length === 0) {
+      navigate('/select-styles');
       return;
     }
 
@@ -44,7 +48,7 @@ const Processing = () => {
               'Content-Type': 'application/json',
             },
             signal: abortController.signal,
-            body: JSON.stringify({ imageData: uploadedImage }),
+            body: JSON.stringify({ imageData: uploadedImage, styles: selectedStyles }),
           }
         );
 
@@ -98,7 +102,7 @@ const Processing = () => {
       abortController.abort();
       clearInterval(messageInterval);
     };
-  }, [navigate, retryKey, uploadedImage, setGeneratedImages]);
+  }, [navigate, retryKey, uploadedImage, selectedStyles, setGeneratedImages]);
 
   const handleRetry = () => {
     setRetryKey((prev) => prev + 1);
