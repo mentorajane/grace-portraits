@@ -56,6 +56,7 @@ serve(async (req) => {
 
   try {
     let imageData: string | undefined;
+    let requestedStyles: string[] | undefined;
     try {
       const bodyText = await req.text();
       if (!bodyText) {
@@ -66,6 +67,7 @@ serve(async (req) => {
       }
       const parsed = JSON.parse(bodyText);
       imageData = parsed.imageData;
+      requestedStyles = Array.isArray(parsed.styles) ? parsed.styles : undefined;
     } catch (parseError) {
       console.error('Failed to parse request body:', parseError);
       return new Response(
@@ -133,10 +135,57 @@ serve(async (req) => {
       {
         name: "Estilo de Vida",
         prompt: IDENTITY_LOCK + "SCENE CHANGE ONLY: Dress the same person in relaxed casual clothing. Place them in a cozy lifestyle setting like a cafe, living room, or outdoor leisure space with warm natural lighting. Keep the same pose and framing as the original photo whenever possible. Do NOT change the face — only wardrobe and environment."
+      },
+      // Poses & Expressões — fundo verde (chroma key)
+      {
+        name: "Sorriso — Fundo Verde",
+        prompt: IDENTITY_LOCK + "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the expression to a warm, natural smile showing genuine happiness, looking directly at the camera. Place them on a SOLID CHROMA KEY GREEN background (#00B140), evenly lit, no shadows on background, ready for compositing. Studio softbox lighting on the subject. Half-body framing."
+      },
+      {
+        name: "Sério Profissional — Fundo Verde",
+        prompt: IDENTITY_LOCK + "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the expression to a serious, confident, professional look with neutral mouth and focused eyes toward the camera. Place them on a SOLID CHROMA KEY GREEN background (#00B140), evenly lit, no shadows on background, ready for compositing. Clean studio lighting. Half-body framing."
+      },
+      {
+        name: "Olhar Lateral — Fundo Verde",
+        prompt: IDENTITY_LOCK + "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the pose to a 3/4 side view, looking off-camera with a thoughtful, contemplative expression. Place them on a SOLID CHROMA KEY GREEN background (#00B140), evenly lit, no shadows on background, ready for compositing. Soft studio lighting. Half-body framing."
+      },
+      {
+        name: "Braços Cruzados — Fundo Verde",
+        prompt: IDENTITY_LOCK + "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the pose to arms crossed in front of the chest with a confident, slight smile, body angled slightly to the side. Place them on a SOLID CHROMA KEY GREEN background (#00B140), evenly lit, no shadows on background, ready for compositing. Clean studio lighting. Three-quarter body framing."
+      },
+      // Poses & Expressões — ambiente real
+      {
+        name: "Sorriso — Ambiente",
+        prompt: IDENTITY_LOCK + "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the expression to a warm, genuine smile, looking at the camera. Place them in a beautiful real environment (sunlit park, modern cafe interior, or urban plaza) with soft natural lighting and pleasant bokeh background. Half-body framing."
+      },
+      {
+        name: "Sério Profissional — Ambiente",
+        prompt: IDENTITY_LOCK + "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the expression to a serious, confident professional look. Place them in a modern office or studio environment with soft, natural window lighting and shallow depth of field. Half-body framing."
+      },
+      {
+        name: "Mão no Rosto — Ambiente",
+        prompt: IDENTITY_LOCK + "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the pose to one hand lightly touching the chin or cheek, with a soft, thoughtful expression and gentle smile. Place them in a warm real environment (cafe near a window, library, or sunlit room) with cinematic natural lighting and bokeh. Half-body framing."
+      },
+      {
+        name: "Olhar Lateral — Ambiente",
+        prompt: IDENTITY_LOCK + "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the pose to a 3/4 angle, looking off-camera with a calm, contemplative expression. Place them in a beautiful real outdoor environment (golden-hour street, park, or rooftop) with cinematic natural lighting and creamy bokeh. Half-body framing."
       }
     ];
 
-    const selectedStyles = styles.slice(0, MAX_STYLES_PER_REQUEST);
+    // Filter by user-requested styles if provided; otherwise default to first N
+    let selectedStyles = styles;
+    if (requestedStyles && requestedStyles.length > 0) {
+      const requestedSet = new Set(requestedStyles);
+      selectedStyles = styles.filter((s) => requestedSet.has(s.name));
+    }
+    selectedStyles = selectedStyles.slice(0, MAX_STYLES_PER_REQUEST);
+
+    if (selectedStyles.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Nenhum estilo válido foi selecionado.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     const generatedImages: Array<{ style: string; url: string }> = [];
     let warningMessage: string | null = null;
 
