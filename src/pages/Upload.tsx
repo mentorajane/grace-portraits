@@ -43,12 +43,23 @@ const Upload = () => {
   };
 
   const processFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Arquivo inválido', description: 'Envie uma imagem (JPG ou PNG).', variant: 'destructive' });
+      return;
+    }
+    setIsProcessing(true);
     try {
       const compressed = await compressImage(file);
       setUploadedImage(compressed);
       navigate('/select-styles');
     } catch (err) {
       console.error('Image processing failed:', err);
+      toast({
+        title: 'Não foi possível abrir a imagem',
+        description: 'Tente outra foto (JPG ou PNG, até 10MB). Imagens HEIC não são suportadas.',
+        variant: 'destructive',
+      });
+      setIsProcessing(false);
     }
   };
 
