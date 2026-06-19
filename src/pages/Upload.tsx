@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Upload as UploadIcon, Heart } from "lucide-react";
+import { Upload as UploadIcon, Heart, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useImageContext } from "@/contexts/ImageContext";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 const Upload = () => {
   const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [clothingImage, setClothingImage] = useState<string | null>(null);
   const { setUploadedImage } = useImageContext();
 
