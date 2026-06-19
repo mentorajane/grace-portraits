@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Upload as UploadIcon, Heart } from "lucide-react";
+import { Upload as UploadIcon, Heart, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useImageContext } from "@/contexts/ImageContext";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 const Upload = () => {
   const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [clothingImage, setClothingImage] = useState<string | null>(null);
   const { setUploadedImage } = useImageContext();
 
@@ -41,12 +43,23 @@ const Upload = () => {
   };
 
   const processFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Arquivo inválido', description: 'Envie uma imagem (JPG ou PNG).', variant: 'destructive' });
+      return;
+    }
+    setIsProcessing(true);
     try {
       const compressed = await compressImage(file);
       setUploadedImage(compressed);
       navigate('/select-styles');
     } catch (err) {
       console.error('Image processing failed:', err);
+      toast({
+        title: 'Não foi possível abrir a imagem',
+        description: 'Tente outra foto (JPG ou PNG, até 10MB). Imagens HEIC não são suportadas.',
+        variant: 'destructive',
+      });
+      setIsProcessing(false);
     }
   };
 
@@ -126,18 +139,22 @@ const Upload = () => {
               <UploadIcon
                 className={`w-16 h-16 transition-smooth ${
                   isDragging ? 'text-accent' : 'text-persona-medium'
-                }`}
+                } ${isProcessing ? 'opacity-30' : ''}`}
               />
               <div className="text-persona-medium text-base font-light">
-                Toque ou arraste sua foto
+                {isProcessing ? 'Processando imagem...' : 'Toque ou arraste sua foto'}
               </div>
+              {isProcessing && (
+                <Loader2 className="w-8 h-8 text-persona-dark animate-spin absolute" />
+              )}
             </div>
             <input
               id="file-upload"
               type="file"
               className="hidden"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/*"
               onChange={handleFileSelect}
+              disabled={isProcessing}
             />
           </label>
         </div>
