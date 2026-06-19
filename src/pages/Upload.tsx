@@ -139,18 +139,22 @@ const Upload = () => {
               <UploadIcon
                 className={`w-16 h-16 transition-smooth ${
                   isDragging ? 'text-accent' : 'text-persona-medium'
-                }`}
+                } ${isProcessing ? 'opacity-30' : ''}`}
               />
               <div className="text-persona-medium text-base font-light">
-                Toque ou arraste sua foto
+                {isProcessing ? 'Processando imagem...' : 'Toque ou arraste sua foto'}
               </div>
+              {isProcessing && (
+                <Loader2 className="w-8 h-8 text-persona-dark animate-spin absolute" />
+              )}
             </div>
             <input
               id="file-upload"
               type="file"
               className="hidden"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/*"
               onChange={handleFileSelect}
+              disabled={isProcessing}
             />
           </label>
         </div>
