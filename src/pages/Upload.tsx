@@ -98,13 +98,13 @@ const Upload = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 animate-fade-in">
-      <div className="max-w-2xl w-full text-center space-y-12">
-        <div className="space-y-4">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-persona-dark tracking-tight">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-8 animate-fade-in">
+      <div className="max-w-2xl w-full text-center space-y-8 md:space-y-12">
+        <div className="space-y-3 md:space-y-4">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-persona-dark tracking-tight">
             Persona
           </h1>
-          <p className="text-lg md:text-xl text-persona-medium font-light">
+          <p className="text-base sm:text-lg md:text-xl text-persona-medium font-light">
             Sua visão. Nossa arte.
           </p>
           <div className="flex justify-center pt-2">
