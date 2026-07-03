@@ -11,8 +11,10 @@ const Results = () => {
   const { generatedImages, loadImages } = useImageContext();
 
   useEffect(() => {
-    loadImages();
-  }, []);
+    if (generatedImages.length === 0) {
+      loadImages();
+    }
+  }, [generatedImages.length, loadImages]);
 
   const handleSaveAll = async () => {
     try {
