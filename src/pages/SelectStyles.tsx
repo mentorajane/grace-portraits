@@ -60,10 +60,10 @@ const SelectStyles = () => {
         </div>
 
         <div className="text-center space-y-3">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-persona-dark tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-persona-dark tracking-tight">
             Escolha seus estilos
           </h1>
-          <p className="text-base md:text-lg text-persona-medium font-light">
+          <p className="text-sm sm:text-base md:text-lg text-persona-medium font-light">
             Selecione até {MAX_STYLES_PER_REQUEST} para gerar agora.
           </p>
         </div>
