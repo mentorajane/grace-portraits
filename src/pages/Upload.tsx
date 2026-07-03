@@ -130,7 +130,7 @@ const Upload = () => {
             onDrop={handleDrop}
           >
             <div
-              className={`w-64 h-64 md:w-80 md:h-80 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center space-y-4 transition-smooth shadow-elegant ${
+              className={`w-56 h-56 sm:w-64 sm:h-64 md:w-80 md:h-80 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center space-y-4 transition-smooth shadow-elegant ${
                 isDragging
                   ? 'border-accent bg-accent/5'
                   : 'border-persona-subtle hover:border-persona-medium'
