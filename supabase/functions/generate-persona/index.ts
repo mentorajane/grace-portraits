@@ -147,7 +147,7 @@ serve(async (req) => {
     console.log('Starting image generation...');
 
     // IDENTITY-LOCK PREFIX: applied to every style to force exact facial preservation
-    const IDENTITY_LOCK = "CRITICAL IDENTITY PRESERVATION TASK: This is a photo edit, NOT a new person generation. You MUST preserve the EXACT same person from the reference photo with 100% facial fidelity. DO NOT alter, stylize, beautify, age, slim, or modify ANY facial feature. Keep IDENTICAL: face shape and proportions, jawline, cheekbones, forehead, eye shape and color, eyebrow shape, nose shape and size, lip shape, mouth, chin, ears, skin tone and texture, freckles/marks/moles, hair color/texture/length/style, facial hair, body type, height proportions, and overall silhouette. The output face must be recognizable as THE SAME PERSON — a friend should instantly identify them. Treat the original face as a locked reference; only the clothing, background, and lighting may change. ";
+    const IDENTITY_LOCK = "ABSOLUTE IDENTITY LOCK — HIGHEST PRIORITY: This is a photo EDIT of the reference image, NOT the creation of a new person. The output MUST be the SAME HUMAN BEING from the reference photo, pixel-faithful to their real face and body. STRICTLY FORBIDDEN: do NOT beautify, slim, thicken, age, de-age, smooth skin, remove blemishes, whiten teeth, enlarge eyes, reshape nose, sharpen jaw, alter ethnicity, alter gender expression, change body proportions, change height, change weight, change muscle tone, change breast/chest size, change hip size, change hand/finger shape, change tattoos or scars, change eye color, change hair color/length/texture/hairline, add or remove facial hair, or apply any 'AI beauty filter'. PRESERVE EXACTLY (100% fidelity): face shape, skull proportions, forehead, jawline, chin, cheekbones, nose shape/size/nostrils, lip shape and thickness, philtrum, mouth width, teeth, ear shape and position, eye shape/spacing/color/eyelids/eyebrows, every freckle/mole/scar/wrinkle/birthmark, skin tone and texture, hair (color, length, style, hairline, parting), facial hair, neck, shoulders, torso, arms, hands, waist, hips, legs, overall body type and silhouette. A close friend or family member must instantly recognize the person in the output as the exact same individual from the reference. Only the clothing, pose (when specified), background, and lighting may change. If in doubt, err on the side of copying the original face and body IDENTICALLY. ";
 
     const styles = [
       {
@@ -211,6 +211,11 @@ serve(async (req) => {
       {
         name: "Olhar Lateral — Ambiente",
         prompt: IDENTITY_LOCK + "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the pose to a 3/4 angle, looking off-camera with a calm, contemplative expression. Place them in a beautiful real outdoor environment (golden-hour street, park, or rooftop) with cinematic natural lighting and creamy bokeh. Half-body framing."
+      },
+      // Fundo Transparente (PNG com canal alfa)
+      {
+        name: "Fundo Transparente",
+        prompt: IDENTITY_LOCK + "BACKGROUND REMOVAL: Keep the same person and their current outfit unchanged. Output the subject as a clean cut-out on a FULLY TRANSPARENT background (PNG with alpha channel = 0 around the subject). No background elements, no shadows, no gradients — only the person on transparent pixels. Preserve clean, sharp edges around hair and clothing. Even, neutral studio lighting on the subject. Half-body framing."
       }
     ];
 
