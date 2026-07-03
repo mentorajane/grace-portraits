@@ -43,7 +43,7 @@ const SelectStyles = () => {
   };
 
   return (
-    <div className="min-h-screen px-6 py-10 animate-fade-in">
+    <div className="min-h-screen px-4 sm:px-6 py-6 md:py-10 pb-28 animate-fade-in">
       <div className="max-w-5xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <Button
