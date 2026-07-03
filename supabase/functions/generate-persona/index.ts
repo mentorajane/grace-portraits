@@ -28,6 +28,48 @@ const extractBase64Image = (imageUrl: string) => {
   return Uint8Array.from(atob(base64Data), (char) => char.charCodeAt(0));
 };
 
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const makeImageRow = (styleName: string, imageUrl: string) => ({
+  id: crypto.randomUUID(),
+  original_image_url: 'temporary-session-image',
+  style_name: styleName,
+  generated_image_url: imageUrl,
+  is_favorite: false,
+  created_at: new Date().toISOString(),
+});
+
+const uploadWithRetry = async (
+  supabase: ReturnType<typeof createClient>,
+  bucketName: string,
+  fileName: string,
+  binaryData: Uint8Array,
+) => {
+  let lastError: unknown = null;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const { error } = await supabase.storage
+      .from(bucketName)
+      .upload(fileName, binaryData, {
+        contentType: 'image/png',
+        upsert: false
+      });
+
+    if (!error) {
+      return null;
+    }
+
+    lastError = error;
+    console.error(`Upload attempt ${attempt} failed for ${fileName}:`, error);
+
+    if (attempt < 3) {
+      await wait(900 * attempt);
+    }
+  }
+
+  return lastError;
+};
+
 const normalizeQuotaError = (status: number) => {
   if (status === 402) {
     return 'PAYMENT_REQUIRED:Payment required. Please add credits to your workspace.';
@@ -186,8 +228,9 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    const generatedImages: Array<{ style: string; url: string }> = [];
+    const generatedImages: Array<ReturnType<typeof makeImageRow>> = [];
     let warningMessage: string | null = null;
+    let usedTemporaryImages = false;
 
     for (const style of selectedStyles) {
       try {
@@ -245,16 +288,14 @@ serve(async (req) => {
 
         const binaryData = extractBase64Image(generatedImageUrl);
         const fileName = `${crypto.randomUUID()}-${sanitizeStyleName(style.name)}.png`;
-        const { error: uploadError } = await supabase.storage
-          .from('persona-images')
-          .upload(fileName, binaryData, {
-            contentType: 'image/png',
-            upsert: false
-          });
+        const uploadError = await uploadWithRetry(supabase, 'persona-images', fileName, binaryData);
 
         if (uploadError) {
           console.error(`Upload error for ${style.name}:`, uploadError);
-          throw new Error(`Failed to upload ${style.name}`);
+          usedTemporaryImages = true;
+          warningMessage = 'A imagem foi gerada, mas o backend ainda está instável. Ela será exibida nesta sessão sem salvar no histórico.';
+          generatedImages.push(makeImageRow(style.name, generatedImageUrl));
+          continue;
         }
 
         const { data: { publicUrl } } = supabase.storage
@@ -263,10 +304,7 @@ serve(async (req) => {
 
         console.log(`Uploaded ${style.name} to storage: ${publicUrl}`);
 
-        generatedImages.push({
-          style: style.name,
-          url: publicUrl
-        });
+        generatedImages.push(makeImageRow(style.name, publicUrl));
       } catch (error) {
         const rawMessage = error instanceof Error ? error.message : 'Failed to generate images';
 
@@ -284,29 +322,34 @@ serve(async (req) => {
       throw new Error('AI_GATEWAY_ERROR:No images were generated');
     }
 
-    // Save to database
-    const { data: insertData, error: insertError } = await supabase
-      .from('generated_images')
-      .insert(
-        generatedImages.map(img => ({
-          original_image_url: imageData.substring(0, 100) + '...', // Store truncated version
-          style_name: img.style,
-          generated_image_url: img.url,
-          is_favorite: false
-        }))
-      )
-      .select();
+    let responseImages = generatedImages;
 
-    if (insertError) {
-      console.error('Database insert error:', insertError);
-      throw new Error('Failed to save images to database');
+    if (!usedTemporaryImages) {
+      // Save to database
+      const { data: insertData, error: insertError } = await supabase
+        .from('generated_images')
+        .insert(
+          generatedImages.map(img => ({
+            original_image_url: imageData.substring(0, 100) + '...', // Store truncated version
+            style_name: img.style_name,
+            generated_image_url: img.generated_image_url,
+            is_favorite: false
+          }))
+        )
+        .select();
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        warningMessage = 'As imagens foram geradas, mas o backend ainda está instável. Elas serão exibidas nesta sessão sem salvar no histórico.';
+      } else if (insertData) {
+        console.log('Successfully saved all images to database');
+        responseImages = insertData;
+      }
     }
-
-    console.log('Successfully saved all images to database');
 
     return new Response(
       JSON.stringify({
-        images: insertData,
+        images: responseImages,
         partial: Boolean(warningMessage),
         warning: warningMessage
       }),
