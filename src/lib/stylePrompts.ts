@@ -40,6 +40,8 @@ export const STYLE_PROMPTS_PT: Record<string, string> = {
     "MUDANÇA DE POSE E EXPRESSÃO: Mantenha a mesma pessoa e o figurino atual. Mude a pose para uma das mãos tocando levemente o queixo ou a bochecha, com expressão suave e pensativa, e leve sorriso. Coloque-a em um ambiente real acolhedor (café perto da janela, biblioteca ou sala iluminada pelo sol) com iluminação natural cinematográfica e bokeh. Enquadramento de meio corpo.",
   "Olhar Lateral — Ambiente":
     "MUDANÇA DE POSE E EXPRESSÃO: Mantenha a mesma pessoa e o figurino atual. Mude a pose para um ângulo 3/4, olhando para fora da câmera com expressão calma e contemplativa. Coloque-a em um belo ambiente externo real (rua na hora dourada, parque ou rooftop) com iluminação natural cinematográfica e bokeh cremoso. Enquadramento de meio corpo.",
+  "Fundo Transparente":
+    "REMOÇÃO DE FUNDO: Mantenha a mesma pessoa e o figurino atual, sem alterações. Gere o resultado como recorte limpo sobre fundo TOTALMENTE TRANSPARENTE (PNG com canal alfa = 0 em volta da pessoa). Sem elementos de fundo, sem sombras, sem gradientes — apenas a pessoa sobre pixels transparentes. Preserve bordas nítidas em cabelo e roupa. Iluminação de estúdio neutra e uniforme. Enquadramento de meio corpo.",
 };
 
 export const AI_PARAMETERS = {
