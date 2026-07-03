@@ -171,6 +171,13 @@ export const STYLE_DEFINITIONS: StyleDefinition[] = [
     prompt:
       "POSE & EXPRESSION CHANGE: Keep the same person and their current outfit. Change the pose to a 3/4 angle, looking off-camera with a calm, contemplative expression. Place them in a beautiful real outdoor environment (golden-hour street, park, or rooftop) with cinematic natural lighting and creamy bokeh. Half-body framing.",
   },
+  {
+    name: "Fundo Transparente",
+    category: "Poses & Expressões",
+    description: "Recorte em PNG com fundo transparente",
+    prompt:
+      "BACKGROUND REMOVAL: Keep the same person and their current outfit unchanged. Output the subject as a clean cut-out on a FULLY TRANSPARENT background (PNG with alpha channel = 0 around the subject). No background elements, no shadows, no gradients — only the person on transparent pixels. Preserve clean, sharp edges around hair and clothing. Even, neutral studio lighting on the subject. Half-body framing.",
+  },
 ];
 
 // Backward-compat map (name -> scene prompt only, no IDENTITY_LOCK)
