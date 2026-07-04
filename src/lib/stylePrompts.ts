@@ -42,7 +42,19 @@ export const STYLE_PROMPTS_PT: Record<string, string> = {
     "MUDANÇA DE POSE E EXPRESSÃO: Mantenha a mesma pessoa e o figurino atual. Mude a pose para um ângulo 3/4, olhando para fora da câmera com expressão calma e contemplativa. Coloque-a em um belo ambiente externo real (rua na hora dourada, parque ou rooftop) com iluminação natural cinematográfica e bokeh cremoso. Enquadramento de meio corpo.",
   "Fundo Transparente":
     "REMOÇÃO DE FUNDO: Mantenha a mesma pessoa e o figurino atual, sem alterações. Gere o resultado como recorte limpo sobre fundo TOTALMENTE TRANSPARENTE (PNG com canal alfa = 0 em volta da pessoa). Sem elementos de fundo, sem sombras, sem gradientes — apenas a pessoa sobre pixels transparentes. Preserve bordas nítidas em cabelo e roupa. Iluminação de estúdio neutra e uniforme. Enquadramento de meio corpo.",
+  "Variação — Ângulo Frontal":
+    "MULTIPLICAR EM VÁRIAS FOTOS — VARIAÇÃO 1: Gere uma nova foto derivada da foto original, mantendo a mesma pessoa, mesmo figurino e mesmo estilo geral. Ângulo frontal direto para a câmera, enquadramento de meio corpo, leve sorriso natural, iluminação suave e cenário neutro elegante. Deve parecer outra foto tirada na mesma sessão fotográfica.",
+  "Variação — Perfil 3/4":
+    "MULTIPLICAR EM VÁRIAS FOTOS — VARIAÇÃO 2: Gere uma nova foto derivada da foto original, mantendo a mesma pessoa, mesmo figurino e mesmo estilo geral. Ângulo 3/4 (perfil parcial), olhar levemente para o lado, enquadramento de meio corpo, expressão calma e confiante, iluminação natural com bokeh leve. Deve parecer outra foto tirada na mesma sessão fotográfica.",
+  "Variação — Retrato Close":
+    "MULTIPLICAR EM VÁRIAS FOTOS — VARIAÇÃO 3: Gere uma nova foto derivada da foto original, mantendo a mesma pessoa, mesmo figurino e mesmo estilo geral. Retrato próximo (close-up dos ombros para cima), foco nos olhos, expressão serena e autêntica, iluminação de retrato suave com profundidade de campo rasa. Deve parecer outra foto tirada na mesma sessão fotográfica.",
 };
+
+export const MULTIPLY_STYLE_NAMES = [
+  "Variação — Ângulo Frontal",
+  "Variação — Perfil 3/4",
+  "Variação — Retrato Close",
+];
 
 export const AI_PARAMETERS = {
   model: "google/gemini-2.5-flash-image",
@@ -51,7 +63,7 @@ export const AI_PARAMETERS = {
   reference: "input photo (locked identity)",
 };
 
-export type StyleCategory = "Estilos" | "Poses & Expressões";
+export type StyleCategory = "Estilos" | "Poses & Expressões" | "Variações (Multiplicar)";
 
 export type StyleDefinition = {
   name: string;
@@ -177,6 +189,29 @@ export const STYLE_DEFINITIONS: StyleDefinition[] = [
     description: "Recorte em PNG com fundo transparente",
     prompt:
       "BACKGROUND REMOVAL: Keep the same person and their current outfit unchanged. Output the subject as a clean cut-out on a FULLY TRANSPARENT background (PNG with alpha channel = 0 around the subject). No background elements, no shadows, no gradients — only the person on transparent pixels. Preserve clean, sharp edges around hair and clothing. Even, neutral studio lighting on the subject. Half-body framing.",
+  },
+
+  // ===== Variações (Multiplicar) — derivar várias fotos de uma única =====
+  {
+    name: "Variação — Ângulo Frontal",
+    category: "Variações (Multiplicar)",
+    description: "Nova foto frontal na mesma sessão",
+    prompt:
+      "MULTIPLY INTO SEVERAL PHOTOS — VARIATION 1: Generate a new photo derived from the original, keeping the same person, same outfit and same overall style. Direct frontal angle to camera, half-body framing, subtle natural smile, soft lighting and elegant neutral setting. It should look like another photo taken in the same photo session.",
+  },
+  {
+    name: "Variação — Perfil 3/4",
+    category: "Variações (Multiplicar)",
+    description: "Ângulo 3/4 na mesma sessão",
+    prompt:
+      "MULTIPLY INTO SEVERAL PHOTOS — VARIATION 2: Generate a new photo derived from the original, keeping the same person, same outfit and same overall style. 3/4 angle (partial profile), gaze slightly off-camera, half-body framing, calm confident expression, natural lighting with gentle bokeh. It should look like another photo taken in the same photo session.",
+  },
+  {
+    name: "Variação — Retrato Close",
+    category: "Variações (Multiplicar)",
+    description: "Close-up do retrato na mesma sessão",
+    prompt:
+      "MULTIPLY INTO SEVERAL PHOTOS — VARIATION 3: Generate a new photo derived from the original, keeping the same person, same outfit and same overall style. Close-up portrait (shoulders up), focus on the eyes, serene authentic expression, soft portrait lighting with shallow depth of field. It should look like another photo taken in the same photo session.",
   },
 ];
 

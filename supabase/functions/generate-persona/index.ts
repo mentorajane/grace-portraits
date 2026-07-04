@@ -216,6 +216,19 @@ serve(async (req) => {
       {
         name: "Fundo Transparente",
         prompt: IDENTITY_LOCK + "BACKGROUND REMOVAL: Keep the same person and their current outfit unchanged. Output the subject as a clean cut-out on a FULLY TRANSPARENT background (PNG with alpha channel = 0 around the subject). No background elements, no shadows, no gradients — only the person on transparent pixels. Preserve clean, sharp edges around hair and clothing. Even, neutral studio lighting on the subject. Half-body framing."
+      },
+      // Variações (Multiplicar) — derivar várias fotos de uma única
+      {
+        name: "Variação — Ângulo Frontal",
+        prompt: IDENTITY_LOCK + "MULTIPLY INTO SEVERAL PHOTOS — VARIATION 1: Generate a new photo derived from the original, keeping the same person, same outfit and same overall style. Direct frontal angle to camera, half-body framing, subtle natural smile, soft lighting and elegant neutral setting. It should look like another photo taken in the same photo session."
+      },
+      {
+        name: "Variação — Perfil 3/4",
+        prompt: IDENTITY_LOCK + "MULTIPLY INTO SEVERAL PHOTOS — VARIATION 2: Generate a new photo derived from the original, keeping the same person, same outfit and same overall style. 3/4 angle (partial profile), gaze slightly off-camera, half-body framing, calm confident expression, natural lighting with gentle bokeh. It should look like another photo taken in the same photo session."
+      },
+      {
+        name: "Variação — Retrato Close",
+        prompt: IDENTITY_LOCK + "MULTIPLY INTO SEVERAL PHOTOS — VARIATION 3: Generate a new photo derived from the original, keeping the same person, same outfit and same overall style. Close-up portrait (shoulders up), focus on the eyes, serene authentic expression, soft portrait lighting with shallow depth of field. It should look like another photo taken in the same photo session."
       }
     ];
 
