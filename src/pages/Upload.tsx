@@ -128,6 +128,37 @@ const Upload = () => {
           </div>
         </div>
 
+        {/* Mode toggle: escolher estilos vs. multiplicar em várias fotos */}
+        <div className="flex justify-center">
+          <div className="inline-flex rounded-full border border-persona-subtle/40 p-1 bg-background/50 backdrop-blur-sm">
+            <button
+              type="button"
+              onClick={() => setMode("select")}
+              disabled={isProcessing}
+              className={`px-4 py-2 text-sm rounded-full transition-smooth ${
+                mode === "select"
+                  ? "bg-persona-dark text-background"
+                  : "text-persona-medium hover:text-persona-dark"
+              }`}
+            >
+              Escolher estilos
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("multiply")}
+              disabled={isProcessing}
+              className={`px-4 py-2 text-sm rounded-full transition-smooth flex items-center gap-1.5 ${
+                mode === "multiply"
+                  ? "bg-persona-dark text-background"
+                  : "text-persona-medium hover:text-persona-dark"
+              }`}
+            >
+              <Copy className="w-3.5 h-3.5" />
+              Multiplicar em várias fotos
+            </button>
+          </div>
+        </div>
+
         <div className="flex justify-center">
           <label
             htmlFor="file-upload"
@@ -150,8 +181,12 @@ const Upload = () => {
                   isDragging ? 'text-accent' : 'text-persona-medium'
                 } ${isProcessing ? 'opacity-30' : ''}`}
               />
-              <div className="text-persona-medium text-base font-light">
-                {isProcessing ? 'Processando imagem...' : 'Toque ou arraste sua foto'}
+              <div className="text-persona-medium text-base font-light px-4 text-center">
+                {isProcessing
+                  ? 'Processando imagem...'
+                  : mode === "multiply"
+                    ? 'Envie 1 foto — geraremos 3 variações'
+                    : 'Toque ou arraste sua foto'}
               </div>
               {isProcessing && (
                 <Loader2 className="w-8 h-8 text-persona-dark animate-spin absolute" />
