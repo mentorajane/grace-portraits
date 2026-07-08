@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { extrairTextoPDF } from '@/lib/pdfExtract'
 
 const SENHA = '1234'
 
@@ -31,10 +30,10 @@ export default function ClonePage() {
   const [baseNegocio, setBaseNegocio] = useState('')
   const [baseSalvando, setBaseSalvando] = useState(false)
   const [baseMensagem, setBaseMensagem] = useState('')
-  const [materiaisPdf, setMateriaisPdf] = useState([])
+  const [materiaisDocs, setMateriaisDocs] = useState([])
   const [materiaisImg, setMateriaisImg] = useState([])
   const [aviso, setAviso] = useState('')
-  const pdfSettingsRef = useRef(null)
+  const docSettingsRef = useRef(null)
   const imgSettingsRef = useRef(null)
 
   useEffect(() => {
@@ -68,12 +67,12 @@ export default function ClonePage() {
           if (d.value) { setBaseNegocio(d.value); try { localStorage.setItem('base_conhecimento_negocio', d.value) } catch {} }
         }
       } catch {}
-      const pdfsLocal = localStorage.getItem('materiais_pdf')
+      const pdfsLocal = localStorage.getItem('materiais_docs')
       const imgsLocal = localStorage.getItem('materiais_img')
-      if (pdfsLocal) setMateriaisPdf(JSON.parse(pdfsLocal))
+      if (pdfsLocal) setMateriaisDocs(JSON.parse(pdfsLocal))
       if (imgsLocal) setMateriaisImg(JSON.parse(imgsLocal))
       if (!pdfsLocal) {
-        try { const r = await fetch('/api/base-conhecimento?key=materiais_pdf'); const d = await r.json(); if (d.value) { setMateriaisPdf(JSON.parse(d.value)); localStorage.setItem('materiais_pdf', d.value) } } catch {}
+        try { const r = await fetch('/api/base-conhecimento?key=materiais_docs'); const d = await r.json(); if (d.value) { setMateriaisDocs(JSON.parse(d.value)); localStorage.setItem('materiais_docs', d.value) } } catch {}
       }
       if (!imgsLocal) {
         try { const r = await fetch('/api/base-conhecimento?key=materiais_img'); const d = await r.json(); if (d.value) { setMateriaisImg(JSON.parse(d.value)); localStorage.setItem('materiais_img', d.value) } } catch {}
@@ -92,7 +91,7 @@ export default function ClonePage() {
     try {
       localStorage.setItem('base_conhecimento', baseAlma)
       localStorage.setItem('base_conhecimento_negocio', baseNegocio)
-      localStorage.setItem('materiais_pdf', JSON.stringify(materiaisPdf))
+      localStorage.setItem('materiais_docs', JSON.stringify(materiaisDocs))
       localStorage.setItem('materiais_img', JSON.stringify(materiaisImg))
     } catch (_) {
       erros.push('localStorage')
@@ -101,7 +100,7 @@ export default function ClonePage() {
       const dados = [
         { key: 'base_conhecimento', value: baseAlma },
         { key: 'base_conhecimento_negocio', value: baseNegocio },
-        { key: 'materiais_pdf', value: JSON.stringify(materiaisPdf) },
+        { key: 'materiais_docs', value: JSON.stringify(materiaisDocs) },
         { key: 'materiais_img', value: JSON.stringify(materiaisImg) },
       ]
       await Promise.all(dados.map((d) =>
@@ -123,13 +122,13 @@ export default function ClonePage() {
     setBaseSalvando(false)
   }
 
-  async function salvarMateriaisSupabase(pdfs, imgs) {
+  async function salvarMateriaisSupabase(docs, imgs) {
     try {
       await Promise.all([
         fetch('/api/base-conhecimento', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: 'materiais_pdf', value: JSON.stringify(pdfs) }),
+          body: JSON.stringify({ key: 'materiais_docs', value: JSON.stringify(docs) }),
         }),
         fetch('/api/base-conhecimento', {
           method: 'PUT',
@@ -140,16 +139,20 @@ export default function ClonePage() {
     } catch {}
   }
 
-  async function handlePdfSettings(e) {
+  function handleDocSettings(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    const texto = await extrairTextoPDF(file)
-    const novo = { nome: file.name, texto, tipo: 'pdf' }
-    const atualizados = [...materiaisPdf, novo]
-    setMateriaisPdf(atualizados)
-    localStorage.setItem('materiais_pdf', JSON.stringify(atualizados))
-    await salvarMateriaisSupabase(atualizados, materiaisImg)
-    setAviso('PDF lido com sucesso!'); setTimeout(() => setAviso(''), 3000)
+    const reader = new FileReader()
+    reader.onload = () => {
+      const texto = reader.result.slice(0, 4000)
+      const novo = { nome: file.name, texto, tipo: 'doc' }
+      const atualizados = [...materiaisDocs, novo]
+      setMateriaisDocs(atualizados)
+      localStorage.setItem('materiais_docs', JSON.stringify(atualizados))
+      salvarMateriaisSupabase(atualizados, materiaisImg)
+      setAviso('Documento lido com sucesso!'); setTimeout(() => setAviso(''), 3000)
+    }
+    reader.readAsText(file)
     e.target.value = ''
   }
 
@@ -162,7 +165,7 @@ export default function ClonePage() {
       const atualizados = [...materiaisImg, novo]
       setMateriaisImg(atualizados)
       localStorage.setItem('materiais_img', JSON.stringify(atualizados))
-      await salvarMateriaisSupabase(materiaisPdf, atualizados)
+      await salvarMateriaisSupabase(materiaisDocs, atualizados)
       setAviso('Imagem carregada com sucesso!'); setTimeout(() => setAviso(''), 3000)
     }
     reader.readAsDataURL(file)
@@ -431,13 +434,13 @@ export default function ClonePage() {
         <p className="text-sm text-white/60 mb-4">Envie PDFs e imagens que o assistente pode consultar para entender melhor o negócio.</p>
 
         <div className="flex gap-2 mb-4">
-          <input ref={pdfSettingsRef} type="file" accept=".pdf" onChange={handlePdfSettings} className="hidden" />
-          <button onClick={() => pdfSettingsRef.current?.click()}
+          <input ref={docSettingsRef} type="file" accept=".md,.txt" onChange={handleDocSettings} className="hidden" />
+          <button onClick={() => docSettingsRef.current?.click()}
             className="flex items-center gap-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/30 px-4 py-2 text-sm text-amber-300 transition-all">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11v4m0 0l-2-2m2 2l2-2" />
-            </svg>Adicionar PDF
+            </svg>Adicionar Documento
           </button>
           <input ref={imgSettingsRef} type="file" accept="image/png,image/jpeg" onChange={handleImgSettings} className="hidden" />
           <button onClick={() => imgSettingsRef.current?.click()}
@@ -457,11 +460,11 @@ export default function ClonePage() {
           </div>
         )}
 
-        {materiaisPdf.length === 0 && materiaisImg.length === 0 ? (
+        {materiaisDocs.length === 0 && materiaisImg.length === 0 ? (
           <p className="text-sm text-white/40 italic">Nenhum material adicionado.</p>
         ) : (
           <div className="space-y-2">
-            {materiaisPdf.map((p, i) => (
+            {materiaisDocs.map((p, i) => (
               <div key={`mp-${i}`} className="flex items-center justify-between rounded-lg bg-amber-500/10 border border-amber-400/20 px-3 py-2">
                 <div className="flex items-center gap-2 text-sm text-amber-300">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -470,7 +473,7 @@ export default function ClonePage() {
                   <span className="truncate max-w-[200px]">{p.nome}</span>
                   {p.texto && <span className="text-[10px] text-amber-400/60">({p.texto.length} caracteres)</span>}
                 </div>
-                <button onClick={async () => { const a = materiaisPdf.filter((_, idx) => idx !== i); setMateriaisPdf(a); localStorage.setItem('materiais_pdf', JSON.stringify(a)); await salvarMateriaisSupabase(a, materiaisImg) }}
+                <button onClick={async () => { const a = materiaisDocs.filter((_, idx) => idx !== i); setMateriaisDocs(a); localStorage.setItem('materiais_docs', JSON.stringify(a)); await salvarMateriaisSupabase(a, materiaisImg) }}
                   className="text-red-400/60 hover:text-red-300 text-sm">&times;</button>
               </div>
             ))}
@@ -482,12 +485,12 @@ export default function ClonePage() {
                   </svg>
                   {img.nome}
                 </div>
-                <button onClick={async () => { const a = materiaisImg.filter((_, idx) => idx !== i); setMateriaisImg(a); localStorage.setItem('materiais_img', JSON.stringify(a)); await salvarMateriaisSupabase(materiaisPdf, a) }}
+                <button onClick={async () => { const a = materiaisImg.filter((_, idx) => idx !== i); setMateriaisImg(a); localStorage.setItem('materiais_img', JSON.stringify(a)); await salvarMateriaisSupabase(materiaisDocs, a) }}
                   className="text-red-400/60 hover:text-red-300 text-sm">&times;</button>
               </div>
             ))}
-            {(materiaisPdf.length > 0 || materiaisImg.length > 0) && (
-              <button onClick={async () => { setMateriaisPdf([]); setMateriaisImg([]); localStorage.removeItem('materiais_pdf'); localStorage.removeItem('materiais_img'); await salvarMateriaisSupabase([], []) }}
+            {(materiaisDocs.length > 0 || materiaisImg.length > 0) && (
+              <button onClick={async () => { setMateriaisDocs([]); setMateriaisImg([]); localStorage.removeItem('materiais_docs'); localStorage.removeItem('materiais_img'); await salvarMateriaisSupabase([], []) }}
                 className="text-xs text-white/40 hover:text-red-300 transition-colors mt-2">Limpar todos</button>
             )}
           </div>

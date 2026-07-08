@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { extrairTextoPDF } from '@/lib/pdfExtract'
 
 export default function ChatInput({ onEnviar, carregando }) {
   const [pergunta, setPergunta] = useState('')
@@ -9,14 +8,14 @@ export default function ChatInput({ onEnviar, carregando }) {
   const [arquivos, setArquivos] = useState([])
   const [aviso, setAviso] = useState('')
   const textareaRef = useRef(null)
-  const pdfRef = useRef(null)
+  const docRef = useRef(null)
   const imgRef = useRef(null)
   const recognitionRef = useRef(null)
   const avisoTimer = useRef(null)
 
   function carregarClone() {
     return {
-      pdfs: JSON.parse(localStorage.getItem('materiais_pdf') || '[]'),
+      docs: JSON.parse(localStorage.getItem('materiais_docs') || '[]'),
       imagens: JSON.parse(localStorage.getItem('materiais_img') || '[]'),
     }
   }
@@ -26,10 +25,10 @@ export default function ChatInput({ onEnviar, carregando }) {
     const texto = pergunta.trim()
     if (!texto || carregando) return
     const clone = carregarClone()
-    const sessaoPdfs = arquivos.filter((a) => a.tipo === 'pdf')
+    const sessaoDocs = arquivos.filter((a) => a.tipo === 'doc')
     const sessaoImgs = arquivos.filter((a) => a.tipo === 'img')
     onEnviar(texto, {
-      pdfs: [...sessaoPdfs, ...clone.pdfs],
+      docs: [...sessaoDocs, ...clone.docs],
       imagens: [...sessaoImgs, ...clone.imagens],
     })
     setPergunta('')
@@ -57,12 +56,16 @@ export default function ChatInput({ onEnviar, carregando }) {
     avisoTimer.current = setTimeout(() => setAviso(''), 3000)
   }
 
-  async function handlePdfUpload(e) {
+  function handleDocUpload(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    const texto = await extrairTextoPDF(file)
-    setArquivos((prev) => [...prev, { nome: file.name, texto, tipo: 'pdf', icon: 'pdf' }])
-    mostrarAviso('PDF lido com sucesso!')
+    const reader = new FileReader()
+    reader.onload = () => {
+      const texto = reader.result.slice(0, 4000)
+      setArquivos((prev) => [...prev, { nome: file.name, texto, tipo: 'doc', icon: 'doc' }])
+      mostrarAviso('Documento lido com sucesso!')
+    }
+    reader.readAsText(file)
     e.target.value = ''
   }
 
@@ -139,13 +142,13 @@ export default function ChatInput({ onEnviar, carregando }) {
         </div>
 
         <div className="flex gap-1.5 sm:self-center">
-          <input ref={pdfRef} type="file" accept=".pdf" onChange={handlePdfUpload} className="hidden" />
+          <input ref={docRef} type="file" accept=".md,.txt" onChange={handleDocUpload} className="hidden" />
           <button
             type="button"
-            onClick={() => pdfRef.current?.click()}
+            onClick={() => docRef.current?.click()}
             disabled={carregando}
             className="rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-[11px] text-white/60 hover:text-white transition-all disabled:opacity-50"
-            title="Adicionar PDF"
+            title="Adicionar Documento (.md, .txt)"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -208,8 +211,8 @@ export default function ChatInput({ onEnviar, carregando }) {
       {arquivos.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {arquivos.map((a, i) => (
-            <span key={`arq-${i}`} className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs ${a.icon === 'pdf' ? 'bg-amber-500/15 border-amber-400/25 text-amber-300' : 'bg-sky-500/15 border-sky-400/25 text-sky-300'}`}>
-              {a.icon === 'pdf' ? (
+            <span key={`arq-${i}`} className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs ${a.icon === 'doc' ? 'bg-amber-500/15 border-amber-400/25 text-amber-300' : 'bg-sky-500/15 border-sky-400/25 text-sky-300'}`}>
+              {a.icon === 'doc' ? (
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>

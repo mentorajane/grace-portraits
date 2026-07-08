@@ -61,15 +61,15 @@ export default function Home() {
           } catch {}
         }
         if (!materiais) {
-          const pdfs = JSON.parse(localStorage.getItem('materiais_pdf') || '[]')
+          const docs = JSON.parse(localStorage.getItem('materiais_docs') || '[]')
           const imgs = JSON.parse(localStorage.getItem('materiais_img') || '[]')
-          if (!pdfs.length) {
+          if (!docs.length) {
             try {
-              const r = await fetch('/api/base-conhecimento?key=materiais_pdf')
+              const r = await fetch('/api/base-conhecimento?key=materiais_docs')
               const d = await r.json()
-              if (d.value) { materiaisEnvio.pdfs = JSON.parse(d.value); localStorage.setItem('materiais_pdf', d.value) }
+              if (d.value) { materiaisEnvio.docs = JSON.parse(d.value); localStorage.setItem('materiais_docs', d.value) }
             } catch {}
-          } else { materiaisEnvio.pdfs = pdfs }
+          } else { materiaisEnvio.docs = docs }
           if (!imgs.length) {
             try {
               const r = await fetch('/api/base-conhecimento?key=materiais_img')

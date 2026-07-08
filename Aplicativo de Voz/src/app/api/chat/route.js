@@ -42,15 +42,15 @@ export async function POST(request) {
     // Base NEGÓCIO — enviada pelo frontend (localStorage)
     let negocioContent = baseNegocioEnviada || ''
 
-    // Materiais de referência (PDFs e imagens enviados pelo usuário)
+    // Materiais de referência (documentos e imagens enviados pelo usuário)
     let materiaisTexto = ''
     const imagensParaVisao = materiais?.imagens?.filter((img) => img.conteudo) || []
     if (materiais) {
       const partes = []
-      if (materiais.pdfs?.length) {
-        for (const pdf of materiais.pdfs) {
-          let bloco = `--- Documento: ${pdf.nome} ---`
-          if (pdf.texto) bloco += `\n${pdf.texto}`
+      if (materiais.docs?.length) {
+        for (const doc of materiais.docs) {
+          let bloco = `--- Documento: ${doc.nome} ---`
+          if (doc.texto) bloco += `\n${doc.texto}`
           partes.push(bloco)
         }
       }
