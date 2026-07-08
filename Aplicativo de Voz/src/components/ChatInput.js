@@ -5,15 +5,32 @@ import { useState, useRef } from 'react'
 export default function ChatInput({ onEnviar, carregando }) {
   const [pergunta, setPergunta] = useState('')
   const [ouvindo, setOuvindo] = useState(false)
+  const [arquivos, setArquivos] = useState([])
   const textareaRef = useRef(null)
+  const pdfRef = useRef(null)
+  const imgRef = useRef(null)
   const recognitionRef = useRef(null)
+
+  function carregarClone() {
+    return {
+      pdfs: JSON.parse(localStorage.getItem('materiais_pdf') || '[]'),
+      imagens: JSON.parse(localStorage.getItem('materiais_img') || '[]'),
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
     const texto = pergunta.trim()
     if (!texto || carregando) return
-    onEnviar(texto)
+    const clone = carregarClone()
+    const sessaoPdfs = arquivos.filter((a) => a.tipo === 'pdf')
+    const sessaoImgs = arquivos.filter((a) => a.tipo === 'img')
+    onEnviar(texto, {
+      pdfs: [...sessaoPdfs, ...clone.pdfs],
+      imagens: [...sessaoImgs, ...clone.imagens],
+    })
     setPergunta('')
+    setArquivos([])
   }
 
   function handleInput(e) {
@@ -29,6 +46,31 @@ export default function ChatInput({ onEnviar, carregando }) {
       e.preventDefault()
       handleSubmit(e)
     }
+  }
+
+  function handlePdfUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const raw = reader.result.slice(0, 30000)
+      const legivel = raw.replace(/[^a-zA-ZÀ-ÿ0-9\s.,!?;:()\-"'%$/@#&*+=°ºª\[\]{}\n\r]/g, ' ').replace(/\s+/g, ' ').trim()
+      const texto = legivel.length > 50 ? legivel.slice(0, 4000) : ''
+      setArquivos((prev) => [...prev, { nome: file.name, texto, tipo: 'pdf', icon: 'pdf' }])
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  function handleImgUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      setArquivos((prev) => [...prev, { nome: file.name, conteudo: reader.result, tipo: 'img', icon: 'img' }])
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
   }
 
   function toggleMicrofone() {
@@ -92,6 +134,31 @@ export default function ChatInput({ onEnviar, carregando }) {
         </div>
 
         <div className="flex gap-1.5 sm:self-center">
+          <input ref={pdfRef} type="file" accept=".pdf" onChange={handlePdfUpload} className="hidden" />
+          <button
+            type="button"
+            onClick={() => pdfRef.current?.click()}
+            disabled={carregando}
+            className="rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-[11px] text-white/60 hover:text-white transition-all disabled:opacity-50"
+            title="Adicionar PDF"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11v4m0 0l-2-2m2 2l2-2" />
+            </svg>
+          </button>
+          <input ref={imgRef} type="file" accept="image/*" onChange={handleImgUpload} className="hidden" />
+          <button
+            type="button"
+            onClick={() => imgRef.current?.click()}
+            disabled={carregando}
+            className="rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-[11px] text-white/60 hover:text-white transition-all disabled:opacity-50"
+            title="Adicionar Imagem"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
           <button
             type="button"
             onClick={toggleMicrofone}
@@ -123,7 +190,27 @@ export default function ChatInput({ onEnviar, carregando }) {
             )}
           </button>
         </div>
+      </div>
 
+      {arquivos.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {arquivos.map((a, i) => (
+            <span key={`arq-${i}`} className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs ${a.icon === 'pdf' ? 'bg-amber-500/15 border-amber-400/25 text-amber-300' : 'bg-sky-500/15 border-sky-400/25 text-sky-300'}`}>
+              {a.icon === 'pdf' ? (
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              ) : (
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              )}
+              <span className="truncate max-w-[120px]">{a.nome}</span>
+              <button onClick={() => setArquivos((prev) => prev.filter((_, idx) => idx !== i))} className="text-red-400/60 hover:text-red-300 ml-0.5 leading-none">&times;</button>
+            </span>
+          ))}
+        </div>
+      )}
     </form>
   )
 }

@@ -41,12 +41,11 @@ export default function Home() {
     setCarregandoChat(true)
 
     try {
-      let baseAlma = '', baseNegocio = '', materiaisPdf = [], materiaisImg = []
+      let baseAlma = '', baseNegocio = ''
+      let materiaisEnvio = materiais || { pdfs: [], imagens: [] }
       if (typeof window !== 'undefined') {
         baseAlma = localStorage.getItem('base_conhecimento') || ''
         baseNegocio = localStorage.getItem('base_conhecimento_negocio') || ''
-        materiaisPdf = JSON.parse(localStorage.getItem('materiais_pdf') || '[]')
-        materiaisImg = JSON.parse(localStorage.getItem('materiais_img') || '[]')
         if (!baseAlma) {
           try {
             const r = await fetch('/api/base-conhecimento?key=base_conhecimento')
@@ -61,19 +60,23 @@ export default function Home() {
             if (d.value) { baseNegocio = d.value; localStorage.setItem('base_conhecimento_negocio', d.value) }
           } catch {}
         }
-        if (!materiaisPdf.length) {
-          try {
-            const r = await fetch('/api/base-conhecimento?key=materiais_pdf')
-            const d = await r.json()
-            if (d.value) { materiaisPdf = JSON.parse(d.value); localStorage.setItem('materiais_pdf', d.value) }
-          } catch {}
-        }
-        if (!materiaisImg.length) {
-          try {
-            const r = await fetch('/api/base-conhecimento?key=materiais_img')
-            const d = await r.json()
-            if (d.value) { materiaisImg = JSON.parse(d.value); localStorage.setItem('materiais_img', d.value) }
-          } catch {}
+        if (!materiais) {
+          const pdfs = JSON.parse(localStorage.getItem('materiais_pdf') || '[]')
+          const imgs = JSON.parse(localStorage.getItem('materiais_img') || '[]')
+          if (!pdfs.length) {
+            try {
+              const r = await fetch('/api/base-conhecimento?key=materiais_pdf')
+              const d = await r.json()
+              if (d.value) { materiaisEnvio.pdfs = JSON.parse(d.value); localStorage.setItem('materiais_pdf', d.value) }
+            } catch {}
+          } else { materiaisEnvio.pdfs = pdfs }
+          if (!imgs.length) {
+            try {
+              const r = await fetch('/api/base-conhecimento?key=materiais_img')
+              const d = await r.json()
+              if (d.value) { materiaisEnvio.imagens = JSON.parse(d.value); localStorage.setItem('materiais_img', d.value) }
+            } catch {}
+          } else { materiaisEnvio.imagens = imgs }
         }
       }
 
@@ -85,7 +88,7 @@ export default function Home() {
           lingua,
           base_alma: baseAlma || undefined,
           base_negocio: baseNegocio || undefined,
-          materiais: { pdfs: materiaisPdf, imagens: materiaisImg },
+          materiais: materiaisEnvio,
         }),
       })
 
