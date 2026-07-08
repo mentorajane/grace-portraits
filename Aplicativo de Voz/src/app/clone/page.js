@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { extrairTextoPDF } from '@/lib/pdfExtract'
 
 const SENHA = '1234'
 
@@ -138,21 +139,15 @@ export default function ClonePage() {
     } catch {}
   }
 
-  function handlePdfSettings(e) {
+  async function handlePdfSettings(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const raw = reader.result.slice(0, 30000)
-      const legivel = raw.replace(/[^a-zA-ZÀ-ÿ0-9\s.,!?;:()\-"'%$/@#&*+=°ºª\[\]{}\n\r]/g, ' ').replace(/\s+/g, ' ').trim()
-      const texto = legivel.length > 50 ? legivel.slice(0, 4000) : ''
-      const novo = { nome: file.name, texto, tipo: 'pdf' }
-      const atualizados = [...materiaisPdf, novo]
-      setMateriaisPdf(atualizados)
-      localStorage.setItem('materiais_pdf', JSON.stringify(atualizados))
-      await salvarMateriaisSupabase(atualizados, materiaisImg)
-    }
-    reader.readAsText(file)
+    const texto = await extrairTextoPDF(file)
+    const novo = { nome: file.name, texto, tipo: 'pdf' }
+    const atualizados = [...materiaisPdf, novo]
+    setMateriaisPdf(atualizados)
+    localStorage.setItem('materiais_pdf', JSON.stringify(atualizados))
+    await salvarMateriaisSupabase(atualizados, materiaisImg)
     e.target.value = ''
   }
 

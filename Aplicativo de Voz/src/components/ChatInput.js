@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { extrairTextoPDF } from '@/lib/pdfExtract'
 
 export default function ChatInput({ onEnviar, carregando }) {
   const [pergunta, setPergunta] = useState('')
@@ -48,17 +49,11 @@ export default function ChatInput({ onEnviar, carregando }) {
     }
   }
 
-  function handlePdfUpload(e) {
+  async function handlePdfUpload(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      const raw = reader.result.slice(0, 30000)
-      const legivel = raw.replace(/[^a-zA-ZÀ-ÿ0-9\s.,!?;:()\-"'%$/@#&*+=°ºª\[\]{}\n\r]/g, ' ').replace(/\s+/g, ' ').trim()
-      const texto = legivel.length > 50 ? legivel.slice(0, 4000) : ''
-      setArquivos((prev) => [...prev, { nome: file.name, texto, tipo: 'pdf', icon: 'pdf' }])
-    }
-    reader.readAsText(file)
+    const texto = await extrairTextoPDF(file)
+    setArquivos((prev) => [...prev, { nome: file.name, texto, tipo: 'pdf', icon: 'pdf' }])
     e.target.value = ''
   }
 
