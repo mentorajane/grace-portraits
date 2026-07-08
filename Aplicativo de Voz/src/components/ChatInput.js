@@ -7,10 +7,12 @@ export default function ChatInput({ onEnviar, carregando }) {
   const [pergunta, setPergunta] = useState('')
   const [ouvindo, setOuvindo] = useState(false)
   const [arquivos, setArquivos] = useState([])
+  const [aviso, setAviso] = useState('')
   const textareaRef = useRef(null)
   const pdfRef = useRef(null)
   const imgRef = useRef(null)
   const recognitionRef = useRef(null)
+  const avisoTimer = useRef(null)
 
   function carregarClone() {
     return {
@@ -49,11 +51,18 @@ export default function ChatInput({ onEnviar, carregando }) {
     }
   }
 
+  function mostrarAviso(msg) {
+    setAviso(msg)
+    if (avisoTimer.current) clearTimeout(avisoTimer.current)
+    avisoTimer.current = setTimeout(() => setAviso(''), 3000)
+  }
+
   async function handlePdfUpload(e) {
     const file = e.target.files?.[0]
     if (!file) return
     const texto = await extrairTextoPDF(file)
     setArquivos((prev) => [...prev, { nome: file.name, texto, tipo: 'pdf', icon: 'pdf' }])
+    mostrarAviso('PDF lido com sucesso!')
     e.target.value = ''
   }
 
@@ -63,6 +72,7 @@ export default function ChatInput({ onEnviar, carregando }) {
     const reader = new FileReader()
     reader.onload = () => {
       setArquivos((prev) => [...prev, { nome: file.name, conteudo: reader.result, tipo: 'img', icon: 'img' }])
+      mostrarAviso('Imagem carregada com sucesso!')
     }
     reader.readAsDataURL(file)
     e.target.value = ''
@@ -187,6 +197,14 @@ export default function ChatInput({ onEnviar, carregando }) {
         </div>
       </div>
 
+      {aviso && (
+        <div className="text-xs text-emerald-400 flex items-center gap-1.5 animate-pulse">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {aviso}
+        </div>
+      )}
       {arquivos.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {arquivos.map((a, i) => (

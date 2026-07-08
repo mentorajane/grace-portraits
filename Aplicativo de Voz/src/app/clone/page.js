@@ -33,6 +33,7 @@ export default function ClonePage() {
   const [baseMensagem, setBaseMensagem] = useState('')
   const [materiaisPdf, setMateriaisPdf] = useState([])
   const [materiaisImg, setMateriaisImg] = useState([])
+  const [aviso, setAviso] = useState('')
   const pdfSettingsRef = useRef(null)
   const imgSettingsRef = useRef(null)
 
@@ -148,6 +149,7 @@ export default function ClonePage() {
     setMateriaisPdf(atualizados)
     localStorage.setItem('materiais_pdf', JSON.stringify(atualizados))
     await salvarMateriaisSupabase(atualizados, materiaisImg)
+    setAviso('PDF lido com sucesso!'); setTimeout(() => setAviso(''), 3000)
     e.target.value = ''
   }
 
@@ -161,6 +163,7 @@ export default function ClonePage() {
       setMateriaisImg(atualizados)
       localStorage.setItem('materiais_img', JSON.stringify(atualizados))
       await salvarMateriaisSupabase(materiaisPdf, atualizados)
+      setAviso('Imagem carregada com sucesso!'); setTimeout(() => setAviso(''), 3000)
     }
     reader.readAsDataURL(file)
     e.target.value = ''
@@ -444,6 +447,15 @@ export default function ClonePage() {
             </svg>Adicionar Imagem
           </button>
         </div>
+
+        {aviso && (
+          <div className="text-xs text-emerald-400 flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {aviso}
+          </div>
+        )}
 
         {materiaisPdf.length === 0 && materiaisImg.length === 0 ? (
           <p className="text-sm text-white/40 italic">Nenhum material adicionado.</p>
