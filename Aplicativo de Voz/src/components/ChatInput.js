@@ -1,38 +1,25 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 
 export default function ChatInput({ onEnviar, carregando }) {
   const [pergunta, setPergunta] = useState('')
   const [ouvindo, setOuvindo] = useState(false)
-  const [materiaisPdf, setMateriaisPdf] = useState([])
-  const [materiaisImg, setMateriaisImg] = useState([])
+  const [sessaoPdf, setSessaoPdf] = useState([])
+  const [sessaoImg, setSessaoImg] = useState([])
   const textareaRef = useRef(null)
   const pdfRef = useRef(null)
   const imgRef = useRef(null)
   const recognitionRef = useRef(null)
 
-  useEffect(() => {
-    setMateriaisPdf(JSON.parse(localStorage.getItem('materiais_pdf') || '[]'))
-    setMateriaisImg(JSON.parse(localStorage.getItem('materiais_img') || '[]'))
-  }, [])
-
-  async function carregarMateriais() {
+  async function carregarMateriaisClone() {
     let pdfs = localStorage.getItem('materiais_pdf')
     let imgs = localStorage.getItem('materiais_img')
     if (!pdfs) {
-      try {
-        const r = await fetch('/api/base-conhecimento?key=materiais_pdf')
-        const d = await r.json()
-        if (d.value) { pdfs = d.value; localStorage.setItem('materiais_pdf', d.value); setMateriaisPdf(JSON.parse(d.value)) }
-      } catch {}
+      try { const r = await fetch('/api/base-conhecimento?key=materiais_pdf'); const d = await r.json(); if (d.value) { pdfs = d.value; localStorage.setItem('materiais_pdf', d.value) } } catch {}
     }
     if (!imgs) {
-      try {
-        const r = await fetch('/api/base-conhecimento?key=materiais_img')
-        const d = await r.json()
-        if (d.value) { imgs = d.value; localStorage.setItem('materiais_img', d.value); setMateriaisImg(JSON.parse(d.value)) }
-      } catch {}
+      try { const r = await fetch('/api/base-conhecimento?key=materiais_img'); const d = await r.json(); if (d.value) { imgs = d.value; localStorage.setItem('materiais_img', d.value) } } catch {}
     }
     return {
       pdfs: JSON.parse(pdfs || '[]'),
@@ -44,9 +31,13 @@ export default function ChatInput({ onEnviar, carregando }) {
     e.preventDefault()
     const texto = pergunta.trim()
     if (!texto || carregando) return
-    const { pdfs, imagens } = await carregarMateriais()
-    onEnviar(texto, { pdfs, imagens })
+    const clone = await carregarMateriaisClone()
+    const todosPdfs = [...sessaoPdf, ...clone.pdfs]
+    const todasImagens = [...sessaoImg, ...clone.imagens]
+    onEnviar(texto, { pdfs: todosPdfs, imagens: todasImagens })
     setPergunta('')
+    setSessaoPdf([])
+    setSessaoImg([])
   }
 
   function handleInput(e) {
@@ -64,38 +55,15 @@ export default function ChatInput({ onEnviar, carregando }) {
     }
   }
 
-  async function salvarMateriaisSupabase() {
-    try {
-      const pdfs = JSON.parse(localStorage.getItem('materiais_pdf') || '[]')
-      const imgs = JSON.parse(localStorage.getItem('materiais_img') || '[]')
-      await Promise.all([
-        fetch('/api/base-conhecimento', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: 'materiais_pdf', value: JSON.stringify(pdfs) }),
-        }),
-        fetch('/api/base-conhecimento', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: 'materiais_img', value: JSON.stringify(imgs) }),
-        }),
-      ])
-    } catch {}
-  }
-
   function handlePdfUpload(e) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = async () => {
+    reader.onload = () => {
       const raw = reader.result.slice(0, 30000)
       const legivel = raw.replace(/[^a-zA-ZÀ-ÿ0-9\s.,!?;:()\-"'%$/@#&*+=°ºª\[\]{}\n\r]/g, ' ').replace(/\s+/g, ' ').trim()
       const texto = legivel.length > 50 ? legivel.slice(0, 4000) : ''
-      const novo = { nome: file.name, texto, tipo: 'pdf' }
-      const atualizados = [...JSON.parse(localStorage.getItem('materiais_pdf') || '[]'), novo]
-      localStorage.setItem('materiais_pdf', JSON.stringify(atualizados))
-      setMateriaisPdf(atualizados)
-      await salvarMateriaisSupabase()
+      setSessaoPdf((prev) => [...prev, { nome: file.name, texto, tipo: 'pdf' }])
     }
     reader.readAsText(file)
     e.target.value = ''
@@ -105,29 +73,11 @@ export default function ChatInput({ onEnviar, carregando }) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = async () => {
-      const novo = { nome: file.name, conteudo: reader.result, tipo: 'img' }
-      const atualizados = [...JSON.parse(localStorage.getItem('materiais_img') || '[]'), novo]
-      localStorage.setItem('materiais_img', JSON.stringify(atualizados))
-      setMateriaisImg(atualizados)
-      await salvarMateriaisSupabase()
+    reader.onload = () => {
+      setSessaoImg((prev) => [...prev, { nome: file.name, conteudo: reader.result, tipo: 'img' }])
     }
     reader.readAsDataURL(file)
     e.target.value = ''
-  }
-
-  function removerPdf(i) {
-    const a = materiaisPdf.filter((_, idx) => idx !== i)
-    setMateriaisPdf(a)
-    localStorage.setItem('materiais_pdf', JSON.stringify(a))
-    salvarMateriaisSupabase()
-  }
-
-  function removerImg(i) {
-    const a = materiaisImg.filter((_, idx) => idx !== i)
-    setMateriaisImg(a)
-    localStorage.setItem('materiais_img', JSON.stringify(a))
-    salvarMateriaisSupabase()
   }
 
   function toggleMicrofone() {
@@ -248,24 +198,24 @@ export default function ChatInput({ onEnviar, carregando }) {
           </button>
         </div>
 
-        {(materiaisPdf.length > 0 || materiaisImg.length > 0) && (
+        {(sessaoPdf.length > 0 || sessaoImg.length > 0) && (
           <div className="flex flex-wrap gap-1.5">
-            {materiaisPdf.map((p, i) => (
+            {sessaoPdf.map((p, i) => (
               <span key={`pdf-${i}`} className="inline-flex items-center gap-1 rounded-lg bg-amber-500/15 border border-amber-400/25 px-2 py-1 text-xs text-amber-300">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
                 <span className="truncate max-w-[120px]">{p.nome}</span>
-                <button onClick={() => removerPdf(i)} className="text-red-400/60 hover:text-red-300 ml-0.5 leading-none">&times;</button>
+                <button onClick={() => setSessaoPdf((prev) => prev.filter((_, idx) => idx !== i))} className="text-red-400/60 hover:text-red-300 ml-0.5 leading-none">&times;</button>
               </span>
             ))}
-            {materiaisImg.map((img, i) => (
+            {sessaoImg.map((img, i) => (
               <span key={`img-${i}`} className="inline-flex items-center gap-1 rounded-lg bg-sky-500/15 border border-sky-400/25 px-2 py-1 text-xs text-sky-300">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span className="truncate max-w-[120px]">{img.nome}</span>
-                <button onClick={() => removerImg(i)} className="text-red-400/60 hover:text-red-300 ml-0.5 leading-none">&times;</button>
+                <button onClick={() => setSessaoImg((prev) => prev.filter((_, idx) => idx !== i))} className="text-red-400/60 hover:text-red-300 ml-0.5 leading-none">&times;</button>
               </span>
             ))}
           </div>
