@@ -154,7 +154,7 @@ export default function ChatInput({ onEnviar, carregando }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11v4m0 0l-2-2m2 2l2-2" />
             </svg>
           </button>
-          <input ref={imgRef} type="file" accept="image/png,image/jpeg" onChange={handleImgUpload} className="hidden" />
+          <input ref={imgRef} type="file" accept="image/*" onChange={handleImgUpload} className="hidden" />
           <button
             type="button"
             onClick={() => imgRef.current?.click()}
