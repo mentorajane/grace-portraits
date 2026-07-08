@@ -60,23 +60,25 @@ export async function POST(request) {
     }
 
     const temImagens = imagensParaVisao.length > 0
-    const model = temImagens ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.3-70b-versatile'
+    const modelo = temImagens ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.3-70b-versatile'
 
     const linguaNomes = { 'pt-br': 'Português (Brasil)', 'pt': 'Português (Portugal)', 'en': 'inglês', 'es': 'espanhol', 'fr': 'francês', 'de': 'alemão', 'it': 'italiano', 'ja': 'japonês', 'zh-cn': 'chinês simplificado' }
     const linguaInstrucao = lingua && lingua !== 'pt-br' ? `\n\n## REGRA DE IDIOMA — MUITO IMPORTANTE\nVocê DEVE responder SOMENTE em ${linguaNomes[lingua] || lingua}. NÃO escreva em português. NÃO misture idiomas. Toda a resposta deve estar integralmente em ${linguaNomes[lingua] || lingua}. Ignore o idioma da pergunta — responda sempre em ${linguaNomes[lingua] || lingua}.` : ''
     const negocioBloco = negocioContent ? `\n\n## INFORMAÇÕES DO NEGÓCIO\nUse estas informações para responder perguntas sobre serviços, produtos, valores e o negócio.\n${negocioContent}` : ''
     const almaBloco = almaContent ? `\n\n## PERSONALIDADE E TOM\nVocê é a pessoa descrita abaixo. Responda SEMPRE no estilo, tom e personalidade dela.\n${almaContent}` : ''
 
+    const materiaisInstrucao = materiaisTexto ? '\n\nVocê recebeu documentos de referência abaixo. ANALISE-OS e USE-OS para responder. Se houver documentos anexados, mencione brevemente o que encontrou neles.' : ''
+    const imagensInstrucao = temImagens ? '\n\nVocê recebeu imagens. DESCREVA e ANALISE cada imagem de forma útil e natural.' : ''
     let systemPrompt
     if (almaContent || negocioContent) {
-      systemPrompt = `Você é a pessoa descrita abaixo. Responda SEMPRE no estilo, tom e personalidade dela, usando as informações fornecidas. Seja EXTREMAMENTE CONCISO — no máximo 2-3 frases por resposta, direto ao ponto, sem rodeios. NUNCA fale como se fosse um robô ou IA genérica — você é a própria pessoa.${linguaInstrucao}${almaBloco}${negocioBloco}${materiaisTexto}`
+      systemPrompt = `Você é a pessoa descrita abaixo. Responda SEMPRE no estilo, tom e personalidade dela, usando as informações fornecidas. Seja EXTREMAMENTE CONCISO — no máximo 2-3 frases por resposta, direto ao ponto, sem rodeios. NUNCA fale como se fosse um robô ou IA genérica — você é a própria pessoa.${linguaInstrucao}${almaBloco}${negocioBloco}${materiaisTexto}${materiaisInstrucao}${imagensInstrucao}`
     } else {
-      systemPrompt = `Você é um assistente útil. Responda APENAS com 1-3 frases curtas e diretas. Seja conciso, relevante e vá direto ao ponto. Nunca divague.${linguaInstrucao}${materiaisTexto}`
+      systemPrompt = `Você é um assistente útil. Responda APENAS com 1-3 frases curtas e diretas. Seja conciso, relevante e vá direto ao ponto. Nunca divague.${linguaInstrucao}${materiaisTexto}${materiaisInstrucao}${imagensInstrucao}`
     }
 
     // Monta mensagens com suporte a visão
     const userContent = temImagens
-      ? [{ type: 'text', text: pergunta }, ...imagensParaVisao.slice(0, 5).map((img) => ({ type: 'image_url', image_url: { url: img.conteudo } }))]
+      ? [{ type: 'text', text: `[IMAGENS ANEXADAS] ${pergunta}\n\nAnalise e descreva as imagens acima de forma natural na sua resposta.` }, ...imagensParaVisao.slice(0, 5).map((img) => ({ type: 'image_url', image_url: { url: img.conteudo } }))]
       : pergunta
 
     const messages = [
@@ -92,10 +94,10 @@ export async function POST(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model,
+        model: modelo,
         messages,
         temperature: 0.5,
-        max_tokens: 500,
+        max_tokens: temImagens || materiaisTexto ? 800 : 500,
       }),
     })
 
