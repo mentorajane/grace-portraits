@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Aplicativo de Voz (Next.js - repo separado)
+/Aplicativo de Voz/
